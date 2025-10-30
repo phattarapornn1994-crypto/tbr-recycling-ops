@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>TBR Recycling OPS | วิเคราะห์ลูกค้า</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg-main:#e8f3e8;
+      --bg-card:#fff;
+      --text:#132;
+      --green:#2f7d32;
+      --deep:#165c1a;
+      --line:#e5eee5;
+      --soft:#f6fbf6;
+      --bd:1px solid rgba(0,0,0,.06);
+      --shadow-sm:0 8px 24px rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box;font-family:"Kanit",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:var(--bg-main);color:var(--text)}
+
+    /* ===== TOPBAR (ยกมาจาก dashboard เพื่อให้เหมือนกัน) ===== */
+    .topbar-wrap{
+      position:sticky; top:0; z-index:999;
+      background:#fff; box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center; gap:14px;
+      padding:14px 20px 10px;
+    }
+    .topbar-left{display:flex; gap:12px; align-items:center}
+    .logo-box{
+      width:52px;height:52px;border-radius:14px;background:#d9ead9;border:1px solid rgba(0,0,0,.03);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:var(--shadow-sm);
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .app-title{display:flex;flex-direction:column;gap:2px}
+    .app-name{font-size:18px;font-weight:600;color:var(--green)}
+    .app-sub{font-size:13px;color:#555}
+    .topbar-right{display:flex;gap:10px;align-items:center}
+    .user-mail{font-size:13px;color:#444}
+    .btn-logout{
+      background:#fff;border:1px solid rgba(0,0,0,.14);border-radius:10px;padding:6px 14px;font-weight:600;cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.05);
+    }
+    .tabs{
+      display:flex;background:linear-gradient(180deg,#fff 0%,#f4f8f4 100%);
+      border-top:1px solid rgba(0,0,0,.03);
+    }
+    .tab{
+      padding:10px 22px; cursor:pointer; font-weight:600; color:#2d3b2f; border-bottom:3px solid transparent;
+    }
+    .tab:hover{background:rgba(232,243,232,.35);}
+    .tab.active{color:var(--green); border-bottom:3px solid var(--green); background:#e8f6ea;}
+
+    /* ===== LAYOUT ===== */
+    main{padding:16px 20px 20px; display:flex; gap:16px}
+    aside{
+      width:330px;background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.03);
+      box-shadow:0 15px 35px rgba(0,0,0,.03); padding:14px;
+      position:sticky; top:140px; height:calc(100vh - 160px); overflow-y:auto;   /* top 140 ให้พ้น header+tabs */
+    }
+    .input{width:100%;padding:9px 11px;border:1px solid #dfe9e0;border-radius:10px}
+    .mini{font-size:12px;color:#667}
+    .hr{height:1px;background:#eef2ef;margin:8px 0}
+
+    section.content{flex:1;display:flex;flex-direction:column;gap:16px}
+    .card{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.03);box-shadow:0 15px 35px rgba(0,0,0,.03);padding:14px 16px}
+    .card h3{margin:0 0 8px 0;color:var(--deep)}
+    .pill{display:inline-block;background:#eef7ee;color:var(--green);border:1px solid rgba(47,125,50,.2);padding:3px 10px;border-radius:999px;font-size:12px;margin-right:6px}
+    .tag-amber{background:#fff6e5;color:#b36a00;border-color:#ffe1b4}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .kpi{background:var(--soft);border:1px solid var(--line);padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:2px}
+    .kpi .v{font-size:20px;font-weight:700;color:var(--deep)}
+    .status{font-size:12px;color:#b00020;white-space:pre-line}
+
+    canvas{max-width:100%}
+  </style>
+</head>
+<body>
+
+  <!-- ===== TOPBAR & TABS (เหมือน dashboard) ===== -->
+  <div class="topbar-wrap">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="logo-box"><img src="logo.png" alt="TBR Logo"/></div>
+        <div class="app-title">
+          <div class="app-name">TBR Recycling OPS</div>
+          <div class="app-sub">วิเคราะห์ลูกค้าเชิงลึก</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-mail" id="userEmail">-</div>
+        <button class="btn-logout" id="btnLogout">ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab" id="tab-dashboard">รายการร้านในความดูแล</div>
+      <div class="tab" id="tab-map">แผนที่ &amp; เส้นทาง</div>
+      <div class="tab active" id="tab-analysis">วิเคราะห์ลูกค้า</div>
+      <div class="tab" id="tab-crm">ความสัมพันธ์ลูกค้า</div>
+    </div>
+  </div>
+
+  <main>
+    <!-- LEFT -->
+    <aside>
+      <div style="font-weight:600;margin-bottom:6px">📦 ร้านที่กำลังวิเคราะห์</div>
+      <input id="shopSearch" class="input" placeholder="พิมพ์ค้นหา..." />
+      <select id="shopSelect" size="12" class="input" style="margin-top:8px;min-height:350px"></select>
+      <div class="status" id="statusLine"></div>
+      <div class="hr"></div>
+      <div class="mini">* ดึงจาก Dashboard / offlineShops / currentShop</div>
+    </aside>
+
+    <!-- RIGHT -->
+    <section class="content">
+      <!-- สรุปบน -->
+      <div class="card">
+        <h3 id="titleShop">-</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span id="pillRegion" class="pill">ภาค - / ลาน -</span>
+          <span id="pillAddr" class="pill">-</span>
+          <span id="pillDist" class="pill tag-amber">ระยะจากลาน - กม.</span>
+          <span id="pillGrade" class="pill">เกรด -</span>
+        </div>
+        <div class="grid-3" style="margin-top:10px">
+          <div class="kpi"><div class="t">คะแนนรวม</div><div id="kpiScore" class="v">-</div><div class="mini">0–100</div></div>
+          <div class="kpi"><div class="t">ระยะทางจากลาน</div><div id="kpiDist" class="v">- กม.</div><div class="mini">Haversine</div></div>
+          <div class="kpi"><div class="t">ระดับความเสี่ยง</div><div id="kpiRisk" class="v">-</div><div class="mini">คำนวนจากปัจจัยที่หัก</div></div>
+        </div>
+      </div>
+
+      <!-- 1 หลักการ -->
+      <div class="card">
+        <h3>1) หลักการวิเคราะห์</h3>
+        <p>ประเมินโอกาส &amp; ความคุ้มในการดูแลลูกค้า จาก 4 มิติ: <b>ศักยภาพรวม</b>, <b>ระยะทาง/โลจิสติกส์</b>, <b>Pricing &amp; Loyalty</b>, <b>ความพร้อมดิจิทัล</b></p>
+      </div>
+
+      <!-- 2 เกณฑ์ -->
+      <div class="card">
+        <h3>2) เกณฑ์การประเมิน</h3>
+        <div class="grid-2">
+          <div class="kpi">
+            <div class="t" style="font-weight:700;color:#165c1a">น้ำหนัก/เงื่อนไข</div>
+            <div class="hr" style="margin:6px 0"></div>
+            <div>• ระยะทาง &gt; 250 กม. → -30</div>
+            <div>• 150–250 กม. → -20</div>
+            <div>• 80–150 กม. → -10</div>
+            <div>• Loyalty / Promo → +5</div>
+            <div>• ดิจิทัลพร้อม (medium–high) → +6 ถึง +10</div>
+          </div>
+          <div class="kpi">
+            <div class="t" style="font-weight:700;color:#165c1a">การจัดเกรด</div>
+            <div class="hr" style="margin:6px 0"></div>
+            <div>A ≥ 85 → ควรเข้า</div>
+            <div>B ≥ 70 → ดูแลต่อเนื่อง</div>
+            <div>C ≥ 50 → ต้องมีข้อเสนอเฉพาะ</div>
+            <div>D &lt; 50 → ระวังต้นทุน</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 กราฟ -->
+      <div class="card">
+        <h3>3) กราฟแสดงผล</h3>
+        <div class="grid-2">
+          <div>
+            <div class="t" style="font-weight:700;color:#165c1a;margin-bottom:6px">Radar: โปรไฟล์ลูกค้า 5 มิติ</div>
+            <canvas id="scoreChart" height="170"></canvas>
+          </div>
+          <div>
+            <div class="t" style="font-weight:700;color:#165c1a;margin-bottom:6px">ช่องทางที่ลูกค้าชอบ</div>
+            <div id="channelList" class="channel-list"></div>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:12px">
+          <div>
+            <div class="t" style="font-weight:700;color:#165c1a;margin-bottom:6px">Pareto: ปัจจัยที่ทำให้คะแนนลด</div>
+            <canvas id="paretoChart" height="160"></canvas>
+          </div>
+          <div>
+            <div class="t" style="font-weight:700;color:#165c1a;margin-bottom:6px">Risk Meter</div>
+            <div id="riskBox" style="background:#fef5f5;border:1px solid rgba(176,0,32,.15);border-radius:12px;padding:10px">
+              <div id="riskLabel" style="font-weight:700;color:#165c1a">-</div>
+              <div style="width:100%;height:14px;border-radius:999px;background:linear-gradient(90deg,#4caf50,#ffeb3b,#f44336);overflow:hidden;margin-top:6px">
+                <div id="riskBar" style="height:100%;background:rgba(255,255,255,.0);width:0%"></div>
+              </div>
+              <div id="riskExplain" style="font-size:13px;margin-top:6px">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 แปลผล -->
+      <div class="card">
+        <h3>4) การแปลผล &amp; บทวิเคราะห์</h3>
+        <div id="analysisText" style="white-space:pre-line"></div>
+        <div class="hr"></div>
+        <div class="grid-3">
+          <div class="kpi"><div class="t" style="font-weight:700;color:#165c1a">Action 7 วัน</div><div id="act7" class="mini">-</div></div>
+          <div class="kpi"><div class="t" style="font-weight:700;color:#165c1a">Action 30 วัน</div><div id="act30" class="mini">-</div></div>
+          <div class="kpi"><div class="t" style="font-weight:700;color:#165c1a">ข้อเสนอแนะราคา</div><div id="actPrice" class="mini">-</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+  // ===== 1) Firebase =====
+  const firebaseConfig = {
+    apiKey:"AIzaSyCn-4Po1XQFNhnFnoIeebKUl3q7BCDLp5w",
+    authDomain:"tbr-recycling-ops.firebaseapp.com",
+    projectId:"tbr-recycling-ops",
+    storageBucket:"tbr-recycling-ops.firebasestorage.app",
+    messagingSenderId:"527372313469",
+    appId:"1:527372313469:web:d7260893ba8deee81fe214"
+  };
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // ===== 2) DOM =====
+  const userEmailEl   = document.getElementById("userEmail");
+  const btnLogoutEl   = document.getElementById("btnLogout");
+  const shopSearchEl  = document.getElementById("shopSearch");
+  const shopSelectEl  = document.getElementById("shopSelect");
+  const statusLineEl  = document.getElementById("statusLine");
+
+  const titleShopEl   = document.getElementById("titleShop");
+  const pillRegionEl  = document.getElementById("pillRegion");
+  const pillAddrEl    = document.getElementById("pillAddr");
+  const pillDistEl    = document.getElementById("pillDist");
+  const pillGradeEl   = document.getElementById("pillGrade");
+  const kpiScoreEl    = document.getElementById("kpiScore");
+  const kpiDistEl     = document.getElementById("kpiDist");
+  const kpiRiskEl     = document.getElementById("kpiRisk");
+  const channelListEl = document.getElementById("channelList");
+  const riskLabelEl   = document.getElementById("riskLabel");
+  const riskBarEl     = document.getElementById("riskBar");
+  const riskExplainEl = document.getElementById("riskExplain");
+  const analysisTextEl= document.getElementById("analysisText");
+  const act7El        = document.getElementById("act7");
+  const act30El       = document.getElementById("act30");
+  const actPriceEl    = document.getElementById("actPrice");
+
+  // ===== 3) tabs =====
+  document.getElementById("tab-dashboard").onclick = ()=>location.href="./dashboard.html";
+  document.getElementById("tab-map").onclick       = ()=>location.href="./map.html";
+  document.getElementById("tab-analysis").onclick  = ()=>{};
+  document.getElementById("tab-crm").onclick       = ()=>location.href="./customer-relations.html";
+
+  btnLogoutEl.onclick = async ()=>{
+    try{ await signOut(auth); }catch(e){}
+    sessionStorage.clear();
+    location.href="./login.html";
+  };
+
+  // ===== 4) helper ทั่วไป =====
+  function deg2rad(x){ return x*Math.PI/180; }
+  function haversineKm(aLat,aLng,bLat,bLng){
+    if([aLat,aLng,bLat,bLng].some(v=>typeof v!=="number")) return null;
+    const R=6371, dLat=deg2rad(bLat-aLat), dLng=deg2rad(bLng-aLng);
+    const A=Math.sin(dLat/2)**2 + Math.cos(deg2rad(aLat))*Math.cos(deg2rad(bLat))*Math.sin(dLng/2)**2;
+    return 2*R*Math.atan2(Math.sqrt(A),Math.sqrt(1-A));
+  }
+  function grade(x){ if(x>=85) return "A"; if(x>=70) return "B"; if(x>=50) return "C"; return "D"; }
+
+  function getUserYardFromSession(){
+    const raw = sessionStorage.getItem("userProfile");
+    if(!raw) return null;
+    try{
+      const u = JSON.parse(raw);
+      if(typeof u.yardLat==="number" && typeof u.yardLng==="number"){
+        return { lat:u.yardLat, lng:u.yardLng, regionId:u.regionId, yardId:u.yardId };
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function analyzeShop(shop, yard){
+    const distKm = (yard && shop?.location?.gps_lat!=null)
+      ? haversineKm(yard.lat,yard.lng, shop.location.gps_lat, shop.location.gps_lng)
+      : null;
+
+    let distPenalty = 0;
+    if(distKm!=null){
+      if(distKm>250) distPenalty=30;
+      else if(distKm>150) distPenalty=20;
+      else if(distKm>80)  distPenalty=10;
+    }
+
+    const hasChan = Array.isArray(shop?.communication?.preferredChannels) && shop.communication.preferredChannels.length;
+    const wantUpd = !!shop?.communication?.wantUpdates;
+
+    let score = 100 - distPenalty;
+    if(!hasChan) score -= 6;
+    if(!wantUpd) score -= 4;
+    if(score<0) score=0;
+
+    const penalties = [
+      {name:"ระยะทาง", value:distPenalty},
+      {name:"ช่องทางไม่ชัด", value: hasChan?0:6},
+      {name:"ยังไม่ได้ opt-in ข่าวสาร", value: wantUpd?0:4}
+    ];
+    const risk = Math.min(100, distPenalty*2 + (hasChan?0:12) + (wantUpd?0:8));
+    const riskLevel = risk>=70 ? "สูง" : risk>=40 ? "ปานกลาง" : "ต่ำ";
+
+    return {
+      score,
+      grade: grade(score),
+      distKm: distKm!=null ? distKm.toFixed(1) : "-",
+      penalties,
+      risk,
+      riskLevel,
+      hasChan,
+      wantUpd
+    };
+  }
+
+  let radarChart=null, paretoChart=null;
+  function drawRadar(res){
+    const ctx = document.getElementById("scoreChart");
+    if(radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx,{
+      type:"radar",
+      data:{
+        labels:["คะแนนรวม","ระยะทาง (กลับค่า)","ช่องทาง","ข่าวสาร","เสถียรภาพ"],
+        datasets:[{
+          label:"คะแนน",
+          data:[
+            res.score,
+            100-(res.penalties.find(p=>p.name==="ระยะทาง")?.value||0),
+            res.hasChan?90:40,
+            res.wantUpd?75:40,
+            60
+          ]
+        }]
+      },
+      options:{plugins:{legend:{display:false}},scales:{r:{min:0,max:100}}}
+    });
+  }
+  function drawPareto(penalties){
+    const ctx = document.getElementById("paretoChart");
+    if(paretoChart) paretoChart.destroy();
+    const sorted = penalties.slice().sort((a,b)=>b.value-a.value);
+    paretoChart = new Chart(ctx,{
+      type:"bar",
+      data:{labels:sorted.map(p=>p.name),datasets:[{label:"คะแนนที่หาย",data:sorted.map(p=>p.value)}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    });
+  }
+  function renderChannels(shop){
+    const wrap = document.getElementById("channelList");
+    wrap.innerHTML = "";
+    const list = Array.isArray(shop?.communication?.preferredChannels) && shop.communication.preferredChannels.length
+      ? shop.communication.preferredChannels
+      : ["ยังไม่ระบุช่องทาง"];
+    list.forEach((ch,idx)=>{
+      const div = document.createElement("div");
+      div.style.cssText = "background:#f8fbf8;border:1px solid rgba(0,0,0,.03);border-radius:10px;padding:6px 10px;display:flex;gap:10px;align-items:center;margin-bottom:8px";
+      div.innerHTML = `
+        <div style="width:30px;height:30px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center">📨</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px">${ch}</div>
+          <div style="width:100%;height:6px;background:#e9f3e9;border-radius:999px;overflow:hidden;margin-top:3px">
+            <div style="height:100%;background:linear-gradient(90deg,#2f7d32,#7ecb7f);width:${100-idx*10}%"></div>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(div);
+    });
+  }
+  function renderRiskBox(res){
+    riskLabelEl.textContent = `ความเสี่ยง: ${res.riskLevel} (${res.risk.toFixed(0)})`;
+    riskBarEl.style.width   = res.risk + "%";
+    riskExplainEl.textContent =
+      res.riskLevel==="สูง" ? "ระยะทางไกล + ช่องทางไม่ชัด → แนะนำให้ติดต่อภายใน 7 วัน"
+      : res.riskLevel==="ปานกลาง" ? "ควรจัดการเรื่องช่องทางและโปรใน 30 วัน"
+      : "ความเสี่ยงต่ำ ติดตามตามรอบ";
+  }
+  function renderExplain(shop,res){
+    const lines = [];
+    lines.push(`คะแนนรวม ${res.score.toFixed(0)} (${res.grade})`);
+    lines.push(`ระยะห่างจากลาน: ${res.distKm} กม.`);
+    if(res.penalties.some(p=>p.value>0)){
+      lines.push("ปัจจัยที่ทำให้คะแนนลด:");
+      res.penalties.filter(p=>p.value>0).forEach((p,i)=> lines.push(` ${i+1}. ${p.name} (-${p.value})`));
+    }else{
+      lines.push("ไม่พบปัจจัยลบสำคัญ ✅");
+    }
+    analysisTextEl.textContent = lines.join("\n");
+  }
+  function renderActions(res){
+    if(res.riskLevel==="สูง"){
+      act7El.textContent  = "โทร/ไลน์ภายใน 7 วัน แจ้งโปร หรือขอรอบส่งประจำ";
+      act30El.textContent = "นัดเยี่ยมที่ร้านและประเมินศักยภาพพื้นที่เก็บ";
+    }else if(res.riskLevel==="ปานกลาง"){
+      act7El.textContent  = "ทักช่องทางที่ลูกค้าชอบ";
+      act30El.textContent = "เสนอให้เข้าระบบ loyalty";
+    }else{
+      act7El.textContent  = "ส่งข้อมูลข่าวสารปกติ";
+      act30El.textContent = "สำรวจวัสดุอื่นที่ยังไม่ได้ซื้อ";
+    }
+    actPriceEl.textContent = res.distKm!=="-" && Number(res.distKm)>150
+      ? "ราคาเงื่อนไขระยะทาง / รวมเที่ยวร่วม"
+      : "ราคาโซน + โบนัสสม่ำเสมอ";
+  }
+  function renderShop(shop,yard){
+    const res = analyzeShop(shop,yard);
+    titleShopEl.textContent  = shop.shopName || "(ไม่มีชื่อร้าน)";
+    pillRegionEl.textContent = (shop.regionId||"-")+" / "+(shop.yardId||"-");
+    pillAddrEl.textContent   = shop.location?.address || "-";
+    pillDistEl.textContent   = "ระยะจากลาน " + (res.distKm || "-") + " กม.";
+    pillGradeEl.textContent  = "เกรด " + res.grade;
+    kpiScoreEl.textContent   = res.score.toFixed(0);
+    kpiDistEl.textContent    = (res.distKm || "-") + " กม.";
+    kpiRiskEl.textContent    = res.riskLevel + ` (${res.risk.toFixed(0)})`;
+    drawRadar(res);
+    drawPareto(res.penalties);
+    renderChannels(shop);
+    renderRiskBox(res);
+    renderExplain(shop,res);
+    renderActions(res);
+  }
+  function populateShops(list, selectedId){
+    shopSelectEl.innerHTML = "";
+    list.forEach((s,idx)=>{
+      const opt = document.createElement("option");
+      opt.value = s.id || `local_${idx}`;
+      opt.textContent = s.shopName || s.name || "(ไม่มีชื่อร้าน)";
+      opt.dataset.index = idx;
+      if(selectedId && s.id===selectedId) opt.selected = true;
+      shopSelectEl.appendChild(opt);
+    });
+  }
+
+  // ===== 5) MAIN =====
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){
+      location.href="./login.html";
+      return;
+    }
+    userEmailEl.textContent = user.email || "-";
+    statusLineEl.textContent = "กำลังดึงข้อมูลจาก Firestore...";
+
+    try {
+      // ดึง "เฉพาะ" จาก Firestore เท่านั้น
+      const snap = await getDocs(collection(db,"shops"));
+      const shops = [];
+      snap.forEach(docSnap=>{
+        shops.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      // ตรงนี้แหละที่จะโชว์ 2 ถ้าใน Firestore มี 2
+      statusLineEl.textContent = `โหลดแล้ว ${shops.length} ร้าน (จาก Firestore)`;
+
+      if(!shops.length){
+        return; // ไม่มีร้านก็จบ
+      }
+
+      // แสดงร้าน
+      populateShops(shops, shops[0]?.id);
+      const yard = getUserYardFromSession();
+      renderShop(shops[0], yard);
+
+      // ค้นหา
+      shopSearchEl.addEventListener("input", ()=>{
+        const q = shopSearchEl.value.toLowerCase().trim();
+        for (const opt of shopSelectEl.options){
+          const txt = opt.textContent.toLowerCase();
+          opt.style.display = txt.includes(q) ? "block" : "none";
+        }
+      });
+
+      // เปลี่ยนร้าน
+      shopSelectEl.addEventListener("change", ()=>{
+        const idx = shopSelectEl.selectedOptions[0]?.dataset.index;
+        if(idx==null) return;
+        const yard2 = getUserYardFromSession();
+        const shop = shops[+idx];
+        renderShop(shop, yard2);
+      });
+
+    } catch (err) {
+      console.log(err);
+      statusLineEl.textContent = "ดึงจาก Firestore ไม่ได้";
+    }
+  });
+</script> 
+</body>
+</html>

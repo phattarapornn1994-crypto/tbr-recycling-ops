@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TBR Recycling OPS | รายละเอียดร้าน</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg-main:#e8f3e8;
+      --bg-card:#fff;
+      --text:#1a1a1a;
+      --green:#2f7d32;
+      --bd:1px solid rgba(0,0,0,.06);
+      --shadow-sm:0 8px 22px rgba(0,0,0,.05);
+      --r:16px;
+    }
+    *{box-sizing:border-box;font-family:"Kanit",system-ui,sans-serif}
+    body{margin:0;min-height:100vh;background:var(--bg-main);display:flex;flex-direction:column}
+
+    /* topbar เหมือน dashboard */
+    .topbar-wrap{
+      position:sticky;top:0;z-index:999;background:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;
+      gap:14px;padding:14px 20px 10px;
+    }
+    .topbar-left{display:flex;gap:12px;align-items:center}
+    .logo-box{
+      width:52px;height:52px;border-radius:14px;background:#d9ead9;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+      box-shadow:var(--shadow-sm);
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .app-title{display:flex;flex-direction:column;gap:2px}
+    .app-name{font-size:18px;font-weight:600;color:var(--green)}
+    .app-sub{font-size:13px;color:#555}
+    .topbar-right{display:flex;gap:10px;align-items:center}
+    .user-mail{font-size:13px;color:#444}
+    .btn-logout{
+      background:#fff;border:1px solid rgba(0,0,0,.14);border-radius:10px;
+      padding:6px 14px;font-weight:600;cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.05);
+    }
+    .tabs{display:flex;background:linear-gradient(180deg,#fff 0%,#f4f8f4 100%);border-top:1px solid rgba(0,0,0,.03)}
+    .tab{padding:10px 22px;cursor:pointer;font-weight:600;color:#2d3b2f;border-bottom:3px solid transparent}
+    .tab:hover{background:rgba(232,243,232,.35)}
+    .tab.active{color:var(--green);border-bottom:3px solid var(--green);background:#e8f6ea}
+
+    main{flex:1;display:flex;gap:16px;padding:16px 20px 20px}
+    .left{width:360px;display:flex;flex-direction:column;gap:14px}
+    .card{
+      background:#fff;border:var(--bd);border-radius:16px;padding:14px 14px 12px;
+      box-shadow:var(--shadow-sm);
+    }
+    .card-title{font-weight:600;color:var(--green);margin-bottom:4px}
+    .card-sub{font-size:13px;color:#666;margin-bottom:6px}
+    .field{margin-bottom:6px}
+    .label{font-size:12px;color:#777}
+    .value{font-weight:600}
+    .tag{
+      background:#e8f6ea;color:#2f7d32;padding:2px 8px;border-radius:999px;
+      font-size:11.5px;display:inline-block;margin-right:4px;margin-top:4px;
+    }
+    .btn-primary{
+      background:var(--green);color:#fff;border:none;border-radius:10px;
+      padding:7px 12px;font-weight:600;cursor:pointer;
+      box-shadow:0 10px 24px rgba(47,125,50,.35);
+    }
+    .right{flex:1;display:flex;flex-direction:column;gap:14px}
+    .section-title{font-size:15px;font-weight:600;color:#243526}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:6px 8px;border-bottom:1px solid rgba(0,0,0,.035)}
+    th{text-align:left;background:#f7faf6}
+
+    .empty{background:#fff7d7;border:1px solid rgba(255,167,38,.2);border-radius:10px;
+      padding:6px 8px;font-size:12.5px;color:#a06411;margin-top:4px}
+    .status-line{min-height:20px;font-size:12px;font-weight:600;color:#b00020;white-space:pre-line;margin-top:4px}
+
+    @media(max-width:1080px){
+      main{flex-direction:column}
+      .left{width:100%;flex-direction:row;overflow:auto}
+    }
+  </style>
+</head>
+<body>
+  <script src="tbr-masters.js"></script>
+
+  <div class="topbar-wrap">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="logo-box"><img src="logo.png" alt="TBR Logo"/></div>
+        <div class="app-title">
+          <div class="app-name">TBR Recycling OPS</div>
+          <div class="app-sub" id="shopHeader">รายละเอียดร้าน</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-mail" id="userEmail">-</div>
+        <button class="btn-logout" id="btnLogout">ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab" id="tab-dashboard">รายการร้านในความดูแล</div>
+      <div class="tab" id="tab-map">แผนที่ &amp; เส้นทาง</div>
+      <div class="tab" id="tab-analysis">วิเคราะห์ลูกค้า</div>
+      <div class="tab" id="tab-crm">ความสัมพันธ์ลูกค้า</div>
+    </div>
+  </div>
+
+  <main>
+    <div class="left">
+      <div class="card">
+        <div class="card-title">🧱 ข้อมูลร้าน</div>
+        <div class="card-sub">รายละเอียดจากฟอร์มที่บันทึกไว้</div>
+        <div class="field">
+          <div class="label">ชื่อร้าน</div>
+          <div class="value" id="shopName">-</div>
+        </div>
+        <div class="field">
+          <div class="label">เจ้าของ/ผู้จัดการ</div>
+          <div class="value" id="ownerName">-</div>
+        </div>
+        <div class="field">
+          <div class="label">ที่อยู่</div>
+          <div class="value" id="address">-</div>
+        </div>
+        <div class="field">
+          <div class="label">ภาค / ลาน</div>
+          <div id="regionTag"></div>
+        </div>
+        <div class="field">
+          <div class="label"> lat / lng </div>
+          <div class="value"><span id="lat">-</span> / <span id="lng">-</span></div>
+        </div>
+        <button class="btn-primary" id="btnEdit">✏️ แก้ไขข้อมูลนี้</button>
+        <div class="status-line" id="statusLine"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📞 ช่องทางติดต่อ</div>
+        <div class="field"><div class="label">โทรศัพท์</div><div class="value" id="phone">-</div></div>
+        <div class="field"><div class="label">LINE</div><div class="value" id="lineId">-</div></div>
+        <div class="field"><div class="label">Facebook</div><div class="value" id="facebook">-</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ ขีดความสามารถ</div>
+        <div class="field"><div class="label">อุปกรณ์</div><div class="value" id="tools">-</div></div>
+        <div class="field"><div class="label">การขนส่ง</div><div class="value" id="transport">-</div></div>
+        <div class="field"><div class="label">การคัดแยก</div><div class="value" id="sorting">-</div></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="section-title">📦 วัสดุ/สินค้า ที่ส่งให้เรา</div>
+      <div id="materialsBox"></div>
+
+      <div class="section-title">📝 หมายเหตุ/พฤติกรรมราคา</div>
+      <div id="noteBox" class="card">
+        <div class="label">ราคาที่ต้องการ / ร้านอื่นที่ขายอยู่</div>
+        <div class="value" id="pricingNote">ยังไม่ระบุ</div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:"AIzaSyCn-4Po1XQFNhnFnoIeebKUl3q7BCDLp5w",
+      authDomain:"tbr-recycling-ops.firebaseapp.com",
+      projectId:"tbr-recycling-ops",
+      storageBucket:"tbr-recycling-ops.firebasestorage.app",
+      messagingSenderId:"527372313469",
+      appId:"1:527372313469:web:d7260893ba8deee81fe214"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // tabs ไปหน้าอื่น
+    document.getElementById("tab-dashboard").onclick = ()=> location.href="./dashboard.html";
+    document.getElementById("tab-map").onclick       = ()=> location.href="./map.html";
+    document.getElementById("tab-analysis").onclick  = ()=> location.href="./shop-analysis.html";
+    document.getElementById("tab-crm").onclick       = ()=> location.href="./customer-relations.html";
+
+    const userEmailEl  = document.getElementById("userEmail");
+    const btnLogoutEl  = document.getElementById("btnLogout");
+    const statusLineEl = document.getElementById("statusLine");
+
+    const shopNameEl = document.getElementById("shopName");
+    const ownerNameEl= document.getElementById("ownerName");
+    const addressEl  = document.getElementById("address");
+    const latEl      = document.getElementById("lat");
+    const lngEl      = document.getElementById("lng");
+    const regionTagEl= document.getElementById("regionTag");
+    const phoneEl    = document.getElementById("phone");
+    const lineIdEl   = document.getElementById("lineId");
+    const facebookEl = document.getElementById("facebook");
+    const toolsEl    = document.getElementById("tools");
+    const transportEl= document.getElementById("transport");
+    const sortingEl  = document.getElementById("sorting");
+    const materialsBox = document.getElementById("materialsBox");
+    const pricingNoteEl= document.getElementById("pricingNote");
+
+    const btnEdit    = document.getElementById("btnEdit");
+
+    btnLogoutEl.onclick = async ()=>{
+      try{ await signOut(auth); }catch(e){}
+      sessionStorage.clear();
+      location.href="./login.html";
+    };
+
+    function renderShop(shop){
+      const loc = shop.location || {};
+      shopNameEl.textContent = shop.shopName || "(ไม่มีชื่อร้าน)";
+      ownerNameEl.textContent= shop.ownerName || shop.profile?.ownerName || "-";
+      addressEl.textContent  = loc.address || "-";
+      latEl.textContent      = (loc.gps_lat!=null?loc.gps_lat:"-");
+      lngEl.textContent      = (loc.gps_lng!=null?loc.gps_lng:"-");
+      phoneEl.textContent    = shop.contactInfo?.phone || "-";
+      lineIdEl.textContent   = shop.contactInfo?.line  || "-";
+      facebookEl.textContent = shop.contactInfo?.facebook || "-";
+      toolsEl.textContent    = Array.isArray(shop.operationalCapacity?.tools)
+                                ? shop.operationalCapacity.tools.join(", ")
+                                : (shop.operationalCapacity?.tools || "-");
+      transportEl.textContent= shop.operationalCapacity?.transportation || "-";
+      sortingEl.textContent  = shop.operationalCapacity?.sortingCapability || "-";
+
+      // tags
+      regionTagEl.innerHTML = "";
+      if(shop.regionId){
+        const span = document.createElement("span");
+        span.className="tag"; span.textContent=shop.regionId;
+        regionTagEl.appendChild(span);
+      }
+      if(shop.yardId){
+        const span = document.createElement("span");
+        span.className="tag"; span.textContent=shop.yardId;
+        regionTagEl.appendChild(span);
+      }
+
+      // materials
+      const mf = shop.materialFlow || {};
+      const mats = mf.materials;
+      if(mats && Array.isArray(mats) && mats.length){
+        let html = `<table><tr><th>ประเภทสินค้า</th><th style="text-align:right">ปริมาณ/เดือน</th></tr>`;
+        mats.forEach(m=>{
+          html += `<tr>
+            <td>${m.type || "-"}</td>
+            <td style="text-align:right">${m.volume != null ? m.volume : "-"}</td>
+          </tr>`;
+        });
+        html += `</table>`;
+        materialsBox.innerHTML = html;
+      }else{
+        materialsBox.innerHTML = `<div class="empty">ยังไม่ได้เพิ่มรายการสินค้า</div>`;
+      }
+
+      pricingNoteEl.textContent = shop.pricingNote || mf.otherBuyers || "ยังไม่ระบุ";
+    }
+
+    btnEdit.onclick = ()=>{
+      const raw = sessionStorage.getItem("currentShop");
+      if(!raw){
+        statusLineEl.textContent="ไม่พบข้อมูลร้านใน session";
+        return;
+      }
+      sessionStorage.setItem("editShop", raw);
+      location.href="./add-shop.html";
+    };
+
+    onAuthStateChanged(auth, (user)=>{
+      if(!user){
+        location.href="./login.html";
+        return;
+      }
+      userEmailEl.textContent = user.email || "-";
+
+      const raw = sessionStorage.getItem("currentShop");
+      if(!raw){
+        statusLineEl.textContent = "ไม่ได้รับข้อมูลร้านจากหน้า Dashboard (ให้กลับไปกดปุ่ม 'ดู' ใหม่)";
+        return;
+      }
+      try{
+        const shop = JSON.parse(raw);
+        renderShop(shop);
+      }catch(e){
+        statusLineEl.textContent = "ข้อมูลร้านอ่านไม่ได้";
+      }
+    });
+  </script>
+</body>
+</html>

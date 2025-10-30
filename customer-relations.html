@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>TBR Recycling OPS | ความสัมพันธ์ลูกค้า</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --green:#2f7d32;
+      --soft:#f5faf5;
+      --line:#e5eee5;
+      --text:#122;
+    }
+    *{box-sizing:border-box;font-family:"Kanit",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;background:#eef4ef}
+
+    /* ===== เหมือน dashboard: ครอบ header + tabs ไว้ด้วยกัน ===== */
+    .topbar-wrap{
+      position:sticky;
+      top:0;
+      z-index:120;
+      background:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+    header.topbar{
+      background:#fff;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 18px 6px 18px;
+      border-bottom:1px solid rgba(0,0,0,.03);
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-logo{
+      width:54px;height:54px;background:#dfecd7 url("./logo.png") center/62% no-repeat;
+      border-radius:16px;border:1px solid rgba(0,0,0,.03);
+    }
+    .brand-text{line-height:1.1}
+    .brand-title{font-weight:700;color:#165c1a}
+    .brand-sub{font-size:13px;color:#556}
+    .userbox{display:flex;align-items:center;gap:16px}
+    .logout-btn{
+      background:#fff;border:1px solid rgba(0,0,0,.1);
+      border-radius:14px;padding:8px 20px;font-weight:600;cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.05);
+    }
+
+    /* tabs เหมือน dashboard */
+    .tabs{
+      display:flex;gap:0;width:100%;
+      background:linear-gradient(180deg,#fff 0%,#f4f8f4 100%);
+      border-top:1px solid rgba(0,0,0,.03);
+    }
+    .tab-item{
+      padding:12px 22px;
+      cursor:pointer;
+      font-weight:600;
+      color:#1d3d1f;
+      border-bottom:3px solid transparent;
+      transition:.15s;
+    }
+    .tab-item.active{
+      background:#e8f6ea;
+      border-bottom:3px solid #2f7d32;
+      color:#2f7d32;
+    }
+
+    main{padding:18px;display:flex;gap:18px;align-items:flex-start}
+    .left-panel{
+      width:340px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 15px 35px rgba(0,0,0,.03);
+      border:1px solid rgba(0,0,0,.03);
+      padding:16px;
+      position:sticky;top:140px;   /* = สูงกว่าเดิมหน่อยเพราะเราเอา header+tabs ไว้ด้านบน */
+      height:calc(100vh - 150px);
+      overflow-y:auto;
+    }
+    .section-title{font-weight:600;margin-bottom:6px;color:#194f21}
+    .input{width:100%;padding:8px 10px;border:1px solid #dfe9e0;border-radius:10px}
+    select.input{background:#fff}
+    .status-line{font-size:12px;margin-top:8px;color:#b00020;white-space:pre-line}
+
+    .right-panel{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .card{
+      background:#fff;
+      border-radius:16px;
+      border:1px solid rgba(0,0,0,.03);
+      box-shadow:0 15px 35px rgba(0,0,0,.03);
+      padding:16px 18px;
+    }
+    .tag{background:#eef7ee;color:#2f7d32;font-size:12px;padding:2px 10px;border-radius:99px;margin-right:4px}
+    .rel-pill{
+      display:inline-block;background:#2f7d32;color:#fff;border-radius:999px;padding:4px 12px;margin-top:6px
+    }
+    textarea{width:100%;min-height:90px;padding:8px 10px;border:1px solid #dfe9e0;border-radius:10px}
+  </style>
+</head>
+<body>
+  <!-- ===== TOP (sticky) ===== -->
+  <div class="topbar-wrap">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo"></div>
+        <div class="brand-text">
+          <div class="brand-title">TBR Recycling OPS</div>
+          <div class="brand-sub">รายการร้านในความดูแลของคุณ</div>
+        </div>
+      </div>
+      <div class="userbox">
+        <div id="userEmail">-</div>
+        <button id="btnLogout" class="logout-btn">ออกจากระบบ</button>
+      </div>
+    </header>
+    <div class="tabs">
+      <div class="tab-item" id="tab-dashboard">รายการร้านในความดูแล</div>
+      <div class="tab-item" id="tab-map">แผนที่ & เส้นทาง</div>
+      <div class="tab-item" id="tab-analysis">วิเคราะห์ลูกค้า</div>
+      <div class="tab-item active" id="tab-crm">ความสัมพันธ์ลูกค้า</div>
+    </div>
+  </div>
+
+  <main>
+    <!-- LEFT -->
+    <aside class="left-panel">
+      <div class="section-title">📦 ร้านที่กำลังวิเคราะห์</div>
+      <input id="shopSearch" class="input" placeholder="พิมพ์ค้นหาเช่น 'ลานอธิมาตร' ..." />
+      <select id="shopSelect" size="12" class="input" style="margin-top:10px;min-height:360px"></select>
+      <div id="statusLine" class="status-line"></div>
+      <p style="font-size:11px;color:#999;margin-top:10px">
+        * รายชื่อนี้ดึงมาจาก Dashboard (ร้านในความดูแล) + ร้านที่เพิ่งเพิ่ม/แก้ไข + ข้อมูล engagement ถ้ามี
+      </p>
+    </aside>
+
+    <!-- RIGHT -->
+    <section class="right-panel">
+      <div class="card">
+        <h2 id="shopName" style="margin:0 0 4px 0">-</h2>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span id="shopIdText" class="tag">id: -</span>
+          <span id="tagRegion" class="tag">ภาค - / ลาน -</span>
+          <span id="lastContact" class="tag" style="background:#fff2cc;color:#b57300">ยังไม่ติดต่อ</span>
+        </div>
+        <p id="shopAddr" style="margin-top:8px;color:#555">-</p>
+        <p id="contactInfo" style="color:#555;margin-top:0">-</p>
+        <div id="relScorePill" class="rel-pill">คะแนนความสัมพันธ์ -</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">🎯 วิเคราะห์เพื่อหาอะไร?</h3>
+        <p style="margin-top:4px">
+          โมดูลนี้ดึงข้อมูลลูกค้าจากหน้า Dashboard มาคำนวณว่า <b>ควรไปเยี่ยม / โทร / ส่งโปรโมชัน</b> ใครก่อน
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">🧠 คำอธิบายคะแนน</h3>
+        <div id="relExplain" style="white-space:pre-line;font-size:13px"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">📋 แผนปฏิบัติ</h3>
+        <textarea id="actionPlan" placeholder="ข้อเสนอแนะ / สิ่งที่ต้องทำภายใน 7 วัน"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    // ---------- firebase ----------
+    const firebaseConfig = {
+      apiKey:"AIzaSyCn-4Po1XQFNhnFnoIeebKUl3q7BCDLp5w",
+      authDomain:"tbr-recycling-ops.firebaseapp.com",
+      projectId:"tbr-recycling-ops",
+      storageBucket:"tbr-recycling-ops.firebasestorage.app",
+      messagingSenderId:"527372313469",
+      appId:"1:527372313469:web:d7260893ba8deee81fe214"
+    };
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ---------- dom ----------
+    const userEmailEl   = document.getElementById("userEmail");
+    const btnLogoutEl   = document.getElementById("btnLogout");
+    const shopSearchEl  = document.getElementById("shopSearch");
+    const shopSelectEl  = document.getElementById("shopSelect");
+    const shopNameEl    = document.getElementById("shopName");
+    const shopAddrEl    = document.getElementById("shopAddr");
+    const contactInfoEl = document.getElementById("contactInfo");
+    const tagRegionEl   = document.getElementById("tagRegion");
+    const lastContactEl = document.getElementById("lastContact");
+    const relScorePill  = document.getElementById("relScorePill");
+    const relExplainEl  = document.getElementById("relExplain");
+    const actionPlanEl  = document.getElementById("actionPlan");
+    const statusLineEl  = document.getElementById("statusLine");
+    const shopIdTextEl  = document.getElementById("shopIdText");
+
+    // tabs ให้เหมือน dashboard
+    document.getElementById("tab-dashboard").onclick = ()=>location.href="./dashboard.html";
+    document.getElementById("tab-map").onclick       = ()=>location.href="./map.html";
+    document.getElementById("tab-analysis").onclick  = ()=>location.href="./shop-analysis.html";
+    document.getElementById("tab-crm").onclick       = ()=>{};
+
+    btnLogoutEl.onclick = async ()=>{
+      try{ await signOut(auth); }catch(e){}
+      sessionStorage.clear();
+      location.href="./login.html";
+    };
+
+    // helpers
+    function loadSoftDeleted(){
+      const raw = localStorage.getItem("tbr_soft_deleted");
+      if(!raw) return [];
+      try { return JSON.parse(raw) || []; } catch { return []; }
+    }
+    async function fetchShopsFromFirestore(){
+      const snap = await getDocs(collection(db,"shops"));
+      const arr = [];
+      snap.forEach(docSnap=>{
+        arr.push({ id:docSnap.id, ...docSnap.data() });
+      });
+      sessionStorage.setItem("allShops", JSON.stringify(arr));
+      localStorage.setItem("allShops", JSON.stringify(arr));
+      return arr;
+    }
+    function loadDashboardShopsFromCache(){
+      const keys = ["allShops","shops","dashboardData","shopsCache","offlineShops","selectedShopsForMap"];
+      const out = [];
+      keys.forEach(k=>{
+        const raw = sessionStorage.getItem(k);
+        if(!raw) return;
+        try{
+          const arr = JSON.parse(raw);
+          if(Array.isArray(arr)) out.push(...arr);
+        }catch(e){}
+      });
+      const lks = ["offlineShops","allShops","shopsCache"];
+      lks.forEach(k=>{
+        const raw = localStorage.getItem(k);
+        if(!raw) return;
+        try{
+          const arr = JSON.parse(raw);
+          if(Array.isArray(arr)) out.push(...arr);
+        }catch(e){}
+      });
+      const cur = sessionStorage.getItem("viewShop") || sessionStorage.getItem("currentShop");
+      if(cur){
+        try{ out.push(JSON.parse(cur)); }catch(e){}
+      }
+      const uniq = [];
+      const seen = new Set();
+      for(const s of out){
+        const key = (s.id||"")+"||"+(s.shopName||"").toLowerCase();
+        if(seen.has(key)) continue;
+        seen.add(key);
+        uniq.push(s);
+      }
+      return uniq;
+    }
+    function loadEngagementRows(){
+      const raw = sessionStorage.getItem("customer-engagement");
+      if(!raw) return [];
+      try{
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){ return []; }
+    }
+    function daysFrom(str){
+      if(!str) return null;
+      const d = new Date(str);
+      if(isNaN(d)) return null;
+      return Math.floor((Date.now()-d.getTime())/(1000*60*60*24));
+    }
+    function gradeFromScore(sc){
+      if(sc>=90) return "A";
+      if(sc>=75) return "B";
+      if(sc>=55) return "C";
+      return "D";
+    }
+    function analyzeRelation(item){
+      const eng  = item._rawEng;
+      const dash = item._rawDash;
+      let score = 100;
+      const explain = [];
+      let days = null;
+
+      if(eng?.lastContactDate){
+        days = daysFrom(eng.lastContactDate);
+      }else if(eng?.lastContactDays){
+        days = eng.lastContactDays;
+      }
+      if(days!=null){
+        if(days<=7){ explain.push("ติดต่อใน 7 วัน ✅"); }
+        else if(days<=30){ score -= 10; explain.push("ติดต่อภายใน 30 วัน"); }
+        else if(days<=60){ score -= 20; explain.push("ห่างเกิน 1 เดือน"); }
+        else { score -= 35; explain.push("ห่างเกิน 2 เดือน"); }
+      }else{
+        score -= 25;
+        explain.push("ยังไม่เคยบันทึกการติดต่อ");
+      }
+
+      const loyalty = eng?.loyaltyProgram === true || eng?.loyaltyProgram === "true";
+      if(!loyalty){
+        score -= 10;
+        explain.push("ยังไม่ได้เข้าโปรแกรม Loyalty");
+      }
+
+      if(!eng?.preferredChannel && !dash?.communication?.preferredChannels){
+        score -= 5;
+        explain.push("ยังไม่ระบุช่องทางที่ชอบ");
+      }
+
+      if(score<0) score=0;
+      return { score, explain: explain.join("\n"), days };
+    }
+    function renderDetail(item, rel){
+      const dash = item._rawDash;
+      const eng  = item._rawEng;
+
+      shopNameEl.textContent  = item.shopName || "(ไม่มีชื่อร้าน)";
+      shopIdTextEl.textContent= dash?.id ? `id: ${dash.id}` : "(offline / from sheet)";
+      tagRegionEl.textContent = (dash?.regionId||"-")+" / "+(dash?.yardId||"-");
+      shopAddrEl.textContent  = dash?.location?.address || eng?.address || "-";
+
+      contactInfoEl.textContent = dash?.contactInfo?.phone
+        ? `โทร ${dash.contactInfo.phone}${dash.contactInfo.line ? " | LINE "+dash.contactInfo.line : ""}`
+        : (eng?.contact || "-");
+
+      if(rel.days!=null){
+        lastContactEl.textContent = `ติดต่อเมื่อ ${rel.days} วันที่แล้ว`;
+      }else{
+        lastContactEl.textContent = "ยังไม่เคยบันทึกการติดต่อ";
+      }
+
+      relScorePill.textContent = `คะแนนความสัมพันธ์ ${rel.score} (${gradeFromScore(rel.score)})`;
+      relExplainEl.textContent = rel.explain;
+
+      if(dash){
+        sessionStorage.setItem("currentShop", JSON.stringify(dash));
+      }else if(eng){
+        sessionStorage.setItem("currentShop", JSON.stringify(eng));
+      }
+    }
+
+    // ---------- main ----------
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ location.href="./login.html"; return; }
+      userEmailEl.textContent = user.email || "-";
+      statusLineEl.textContent = "กำลังดึงข้อมูลร้าน...";
+
+      const softDeleted = loadSoftDeleted();
+      let master = [];
+
+      // 1) จาก Firestore
+      try{
+        const fresh = await fetchShopsFromFirestore();
+        master = fresh.map(s=>({
+          source:"firestore",
+          shopName:s.shopName || "(ไม่มีชื่อร้าน)",
+          _rawDash:s,
+          _rawEng:null
+        }));
+      }catch(e){
+        master = [];
+      }
+
+      // 2) จาก cache
+      const cached = loadDashboardShopsFromCache();
+      cached.forEach(s=>{
+        const key = (s.id||"")+"||"+(s.shopName||"").toLowerCase();
+        const exists = master.find(m => (m._rawDash?.id||"")+"||"+(m.shopName||"").toLowerCase() === key);
+        if(!exists){
+          master.push({
+            source:"cache",
+            shopName:s.shopName || "(ไม่มีชื่อร้าน)",
+            _rawDash:s,
+            _rawEng:null
+          });
+        }
+      });
+
+      // 3) จาก engagement ที่กรอกเอง
+      const engs = loadEngagementRows();
+      engs.forEach(row=>{
+        const name = (row.shopName||"").trim();
+        if(!name){
+          master.push({source:"eng",shopName:"(จากชีท ไม่มีชื่อ)",_rawDash:null,_rawEng:row});
+          return;
+        }
+        const existed = master.find(m => m.shopName && m.shopName.toLowerCase()===name.toLowerCase());
+        if(existed){
+          existed._rawEng = row;
+        }else{
+          master.push({source:"eng",shopName:name,_rawDash:null,_rawEng:row});
+        }
+      });
+
+      // 4) กรองตัวที่ถูกลบ
+      if(softDeleted.length){
+        master = master.filter(m => m._rawDash?.id ? !softDeleted.includes(m._rawDash.id) : true);
+      }
+
+      if(!master.length){
+        statusLineEl.textContent = "ยังไม่พบข้อมูลร้าน";
+        return;
+      }
+
+      // เติม select
+      shopSelectEl.innerHTML = "";
+      master.forEach((item,idx)=>{
+        const opt = document.createElement("option");
+        opt.value = item.shopName || ("shop_"+idx);
+        opt.textContent = (item.source==="eng" ? "📄 " : "📋 ") + (item.shopName || "(ไม่มีชื่อร้าน)");
+        opt.dataset.index = idx;
+        shopSelectEl.appendChild(opt);
+      });
+
+      // แสดงร้านแรก
+      const first = master[0];
+      const rel0  = analyzeRelation(first);
+      renderDetail(first, rel0);
+      statusLineEl.textContent = `โหลดแล้ว ${master.length} ร้าน`;
+
+      // ค้นหา
+      shopSearchEl.addEventListener("input", ()=>{
+        const q = shopSearchEl.value.toLowerCase().trim();
+        for(const opt of shopSelectEl.options){
+          const txt = opt.textContent.toLowerCase();
+          opt.style.display = txt.includes(q) ? "block" : "none";
+        }
+      });
+
+      // เปลี่ยนร้าน
+      shopSelectEl.addEventListener("change", ()=>{
+        const idx = shopSelectEl.selectedOptions[0]?.dataset.index;
+        if(idx==null) return;
+        const item = master[+idx];
+        const rel  = analyzeRelation(item);
+        renderDetail(item, rel);
+      });
+    });
+  </script>
+</body>
+</html>

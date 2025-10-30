@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TBR Recycling OPS | Dashboard</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg-main:#e8f3e8;
+      --bg-card:#fff;
+      --bg-soft:#f5faf5;
+      --text:#1a1a1a;
+      --dim:#666;
+      --green:#2f7d32;
+      --soft:#e8f6ea;
+      --bd:1px solid rgba(0,0,0,.06);
+      --shadow:0 16px 40px rgba(0,0,0,.05);
+      --shadow-sm:0 8px 24px rgba(0,0,0,.06);
+      --radius-lg:20px;
+      --radius-md:14px;
+      --highlight:#fff9c4;
+    }
+    *{box-sizing:border-box;font-family:"Kanit",system-ui,sans-serif}
+    body{
+      margin:0;
+      background:var(--bg-main);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* ===== TOPBAR STICKY ===== */
+    .topbar-wrap{
+      position:sticky;
+      top:0;
+      z-index:999;
+      background:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:14px 20px 10px;
+    }
+    .topbar-left{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo-box{
+      width:52px;
+      height:52px;
+      border-radius:14px;
+      background:#d9ead9;
+      border:1px solid rgba(0,0,0,.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      box-shadow:var(--shadow-sm);
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .app-title{display:flex;flex-direction:column;gap:2px}
+    .app-name{font-size:18px;font-weight:600;color:var(--green)}
+    .app-sub{font-size:13px;color:#555}
+    .topbar-right{display:flex;gap:10px;align-items:center}
+    .user-mail{font-size:13px;color:#444}
+    .btn-logout{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.14);
+      border-radius:10px;
+      padding:6px 14px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.05);
+    }
+    .tabs{
+      display:flex;
+      background:linear-gradient(180deg,#fff 0%,#f4f8f4 100%);
+      border-top:1px solid rgba(0,0,0,.03);
+    }
+    .tab{
+      padding:10px 22px;
+      cursor:pointer;
+      font-weight:600;
+      color:#2d3b2f;
+      border-bottom:3px solid transparent;
+    }
+    .tab:hover{background:rgba(232,243,232,.35);}
+    .tab.active{
+      color:var(--green);
+      border-bottom:3px solid var(--green);
+      background:#e8f6ea;
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    main{
+      flex:1;
+      display:flex;
+      gap:18px;
+      padding:16px 20px 20px;
+      min-height:0;
+    }
+    aside{
+      width:320px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .card{
+      background:#fff;
+      border:var(--bd);
+      border-radius:16px;
+      padding:14px 14px 12px;
+      box-shadow:var(--shadow-sm);
+    }
+    .card-title{
+      font-weight:600;
+      color:var(--green);
+      display:flex;
+      gap:6px;
+      align-items:center;
+      margin-bottom:6px;
+    }
+    .card-sub{
+      font-size:13px;
+      color:#666;
+      margin-bottom:10px;
+    }
+    label{font-size:13px;font-weight:600;margin-bottom:4px;display:block}
+    input,select{
+      width:100%;
+      padding:7px 10px;
+      border:1px solid rgba(0,0,0,.15);
+      border-radius:10px;
+      margin-bottom:8px;
+      background:#fff;
+    }
+    input:focus,select:focus{
+      outline:none;
+      border-color:var(--green);
+      box-shadow:0 0 0 3px rgba(47,125,50,.12);
+    }
+    .small-hint{font-size:12px;color:#888}
+
+    .btn-primary{
+      background:var(--green);
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      padding:8px 12px;
+      font-weight:600;
+      cursor:pointer;
+      width:100%;
+      box-shadow:0 10px 24px rgba(47,125,50,.35);
+    }
+    .btn-secondary{
+      background:#fff;
+      color:#2f7d32;
+      border:1px solid rgba(47,125,50,.28);
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:12px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    /* ===== RIGHT (TABLE) ===== */
+    .content{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .content-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+    .content-title{
+      font-weight:600;
+      font-size:16px;
+      color:#243526;
+    }
+    .content-sub{font-size:13px;color:#666}
+    .table-wrap{
+      background:#fff;
+      border:var(--bd);
+      border-radius:16px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:280px;
+    }
+    .table-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-bottom:var(--bd);
+      background:#f6faf6;
+    }
+    .table-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .table-search{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .table-search input{
+      width:180px;
+      margin:0;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    thead th{
+      text-align:left;
+      padding:8px 10px;
+      border-bottom:1px solid rgba(0,0,0,.04);
+      white-space:nowrap;
+      background:#fff;
+    }
+    tbody td{
+      padding:8px 10px;
+      border-bottom:1px solid rgba(0,0,0,.025);
+      vertical-align:top;
+    }
+    tbody tr:nth-child(even){
+      background:#fafdf9;
+    }
+    .tag{
+      background:#e8f6ea;
+      color:#2f7d32;
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:11px;
+      display:inline-block;
+      margin-right:3px;
+    }
+    .row-actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .btn-sm{
+      border:none;
+      border-radius:6px;
+      padding:3px 8px 4px;
+      font-size:12px;
+      cursor:pointer;
+      font-weight:500;
+    }
+    .btn-view{background:#edf4ff;color:#1640a0}
+    .btn-edit{background:#fff3d9;color:#a16400}
+    .btn-del{background:#ffe7e7;color:#c62828}
+
+    .scroll-body{
+      overflow:auto;
+      max-height:calc(100vh - 210px);
+    }
+
+    .status-line{
+      min-height:20px;
+      font-size:12px;
+      font-weight:600;
+      color:#b00020;
+      white-space:pre-line;
+      margin-top:4px;
+    }
+
+    .row-highlight{animation:flash 2s ease-out;}
+    @keyframes flash{
+      0%{background:var(--highlight);}
+      100%{background:transparent;}
+    }
+
+    @media(max-width:1080px){
+      main{flex-direction:column}
+      aside{width:100%;flex-direction:row;overflow:auto}
+      .table-header{flex-wrap:wrap}
+      .scroll-body{max-height:unset}
+      .table-search{margin-left:0}
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== TOPBAR ===== -->
+  <div class="topbar-wrap">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="logo-box"><img src="logo.png" alt="TBR Logo"></div>
+        <div class="app-title">
+          <div class="app-name">TBR Recycling OPS</div>
+          <div class="app-sub" id="scopeText">รายการร้านในความดูแลของคุณ</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-mail" id="userEmail">-</div>
+        <button class="btn-logout" id="btnLogout">ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" id="tab-dashboard">รายการร้านในความดูแล</div>
+      <div class="tab" id="tab-map">แผนที่ &amp; เส้นทาง</div>
+      <div class="tab" id="tab-analysis">วิเคราะห์ลูกค้า</div>
+      <div class="tab" id="tab-crm">ความสัมพันธ์ลูกค้า</div>
+    </div>
+  </div>
+
+  <main>
+    <!-- ===== LEFT ===== -->
+    <aside>
+      <div class="card">
+        <div class="card-title">🎯 ขอบเขตข้อมูลของฉัน</div>
+        <div class="card-sub">คุณจะเห็นข้อมูลเฉพาะภาค/ลานที่ผูกกับสิทธิ์ของคุณ</div>
+        <label for="regionFilter">ภาคที่รับผิดชอบ</label>
+        <select id="regionFilter"></select>
+        <label for="yardFilter">ลาน/สาขา</label>
+        <select id="yardFilter"></select>
+        <div class="small-hint" id="roleInfo">สิทธิ์: -</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 ตรวจสอบร้านก่อนเพิ่ม</div>
+        <div class="card-sub">พิมพ์ชื่อร้านที่มีอยู่แล้ว เพื่อป้องกันการเพิ่มซ้ำ</div>
+        <input id="searchBeforeAdd" placeholder="เช่น สายชมพู รีไซเคิล"/>
+        <button class="btn-primary" id="btnCheckShop">ค้นหา</button>
+        <div class="status-line" id="checkResult"></div>
+        <div style="margin-top:6px">
+          <button class="btn-secondary" id="btnAddNew">➕ เพิ่มร้านใหม่</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📍 ส่งไปดูบนแผนที่</div>
+        <div class="card-sub">ติ๊กเลือกร้านในตาราง แล้วกดปุ่มนี้</div>
+        <button class="btn-primary" id="btnGoMap">ดูบนแผนที่</button>
+        <div class="small-hint">ระบบจะส่งเฉพาะร้านที่มีพิกัดไปยังหน้าแผนที่</div>
+      </div>
+    </aside>
+
+    <!-- ===== RIGHT ===== -->
+    <div class="content">
+      <div class="content-top">
+        <div>
+          <div class="content-title">📋 รายการร้านในความดูแล</div>
+          <div class="content-sub" id="listDesc">—</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-actions">
+            <button class="btn-secondary" id="btnSelectAll">เลือกทั้งหมด</button>
+            <button class="btn-secondary" id="btnClearAll">ล้างการเลือก</button>
+          </div>
+          <div class="table-search">
+            <input id="tableSearch" placeholder="ค้นหาในตาราง..." />
+          </div>
+          <div class="status-line" id="statusLine"></div>
+        </div>
+        <div class="scroll-body">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:34px"></th>
+                <th>ชื่อร้าน</th>
+                <th>ที่อยู่</th>
+                <th>ภาค / ลาน</th>
+                <th>พิกัด</th>
+                <th style="width:160px">การทำงาน</th>
+              </tr>
+            </thead>
+            <tbody id="shopsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Firebase + dashboard logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    /* ===== FIREBASE CONFIG ===== */
+    const firebaseConfig = {
+      apiKey:"AIzaSyCn-4Po1XQFNhnFnoIeebKUl3q7BCDLp5w",
+      authDomain:"tbr-recycling-ops.firebaseapp.com",
+      projectId:"tbr-recycling-ops",
+      storageBucket:"tbr-recycling-ops.firebasestorage.app",
+      messagingSenderId:"527372313469",
+      appId:"1:527372313469:web:d7260893ba8deee81fe214"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    /* ===== DOM ===== */
+    const userEmailEl  = document.getElementById("userEmail");
+    const btnLogoutEl  = document.getElementById("btnLogout");
+    const shopsBodyEl  = document.getElementById("shopsBody");
+    const statusLineEl = document.getElementById("statusLine");
+    const checkResultEl= document.getElementById("checkResult");
+    const regionFilterEl = document.getElementById("regionFilter");
+    const yardFilterEl   = document.getElementById("yardFilter");
+    const roleInfoEl     = document.getElementById("roleInfo");
+    const listDescEl     = document.getElementById("listDesc");
+    const scopeTextEl    = document.getElementById("scopeText");
+
+    const btnCheckShop  = document.getElementById("btnCheckShop");
+    const searchBeforeAddEl = document.getElementById("searchBeforeAdd");
+    const btnAddNew     = document.getElementById("btnAddNew");
+    const btnGoMap      = document.getElementById("btnGoMap");
+    const btnSelectAll  = document.getElementById("btnSelectAll");
+    const btnClearAll   = document.getElementById("btnClearAll");
+    const tableSearchEl = document.getElementById("tableSearch");
+
+    /* tabs */
+    document.getElementById("tab-dashboard").onclick = ()=> location.href="./dashboard.html";
+    document.getElementById("tab-map").onclick       = ()=> location.href="./map.html";
+    document.getElementById("tab-analysis").onclick  = ()=> location.href="./shop-analysis.html";
+    document.getElementById("tab-crm").onclick       = ()=> location.href="./customer-relations.html";
+
+    /* ===== MASTER (ภาค/ลาน) ===== */
+    const YARDS_MASTER = [
+      { region:"ภาคเบียร์", name:"โรงงานเศษแก้วบางบาล", lat:14.33616, lng:100.47968 },
+      { region:"ภาคเบียร์", name:"จุดรับซื้อเมืองนครสวรรค์ 2", lat:15.63689, lng:100.12873 },
+      { region:"ภาคเบียร์", name:"ลานกำแพงเพชร", lat:16.17864, lng:99.73326 },
+      { region:"ภาคเบียร์", name:"ลานบางบาล", lat:14.32986, lng:100.47799 },
+      { region:"ภาคเบียร์", name:"ลานวังน้อย", lat:14.18774, lng:100.6339 },
+      { region:"ภาคเบียร์", name:"ลานสีมาธุรกิจ", lat:15.93761, lng:99.94671 },
+
+      { region:"ภาคเหนือ", name:"จุดรับซื้อเมืองลำพูน", lat:18.64271, lng:99.05027 },
+      { region:"ภาคเหนือ", name:"ลานธนภักดี", lat:19.04388, lng:98.96674 },
+      { region:"ภาคเหนือ", name:"ลานมงคลสมัย", lat:17.64006, lng:100.2385 },
+
+      { region:"ภาคใต้", name:"จุดรับซื้อเมืองภูเก็ต", lat:7.99312, lng:98.36943 },
+      { region:"ภาคใต้", name:"ลานนทีชัย", lat:9.08716, lng:99.17357 },
+
+      { region:"ภาคตะวันตก", name:"โกดังวังขนาย", lat:13.95321, lng:99.65422 },
+      { region:"ภาคตะวันตก", name:"จุดรับซื้อเมืองนครปฐม", lat:13.8122, lng:100.07596 },
+      { region:"ภาคตะวันตก", name:"ลานแสงโสม", lat:13.80447, lng:100.2476 },
+      { region:"ภาคตะวันตก", name:"ลานกาญจนสิงขร", lat:14.08503, lng:99.49957 },
+      { region:"ภาคตะวันตก", name:"ลานยูไนเต็ดฯ", lat:13.79662, lng:100.18958 },
+      { region:"ภาคตะวันตก", name:"ลานสุรากระทิงแดง", lat:13.65303, lng:100.28847 },
+      { region:"ภาคตะวันตก", name:"ลานหลักชัยค้าสุรา", lat:13.59308, lng:99.80441 },
+
+      { region:"ภาคตะวันออก", name:"จุดรับซื้อบางพลี", lat:13.59385, lng:100.80435 },
+      { region:"ภาคตะวันออก", name:"ลานบางยี่ขัน", lat:13.95288, lng:100.49976 },
+      { region:"ภาคตะวันออก", name:"จุดรับซื้อบ้านบึง", lat:13.60917, lng:100.79854 },
+      { region:"ภาคตะวันออก", name:"จุดรับซื้อกรุงเทพ", lat:13.69784, lng:100.48059 },
+      { region:"ภาคตะวันออก", name:"ลานเฟื่องฟูอนันต์", lat:13.96075, lng:101.56947 },
+
+      { region:"ภาคอีสานบน", name:"จุดรับซื้อขอนแก่น", lat:16.34200, lng:102.83575 },
+      { region:"ภาคอีสานบน", name:"ลานเทพอรุโณทัย", lat:17.92127, lng:102.80889 },
+      { region:"ภาคอีสานบน", name:"ลานแก่นขวัญ", lat:16.73728, lng:102.8184 },
+
+      { region:"ภาคอีสานล่าง", name:"โรงงานเศษแก้วโคราช", lat:15.08781, lng:102.20054 },
+      { region:"ภาคอีสานล่าง", name:"จุดรับซื้อโคราช", lat:15.08781, lng:102.20054 },
+      { region:"ภาคอีสานล่าง", name:"จุดรับซื้อวารินฯ", lat:15.19291, lng:104.82494 },
+      { region:"ภาคอีสานล่าง", name:"ลานเอส.เอส. การสุรา", lat:15.23868, lng:105.15134 },
+      { region:"ภาคอีสานล่าง", name:"ลานอธิมาตร", lat:15.30207, lng:103.24892 }
+    ];
+
+    /* ===== STATE ===== */
+    let userProfile = null;
+    let allShops    = [];
+    let filteredShops = [];
+    let currentRegion = "";
+    let currentYard   = "";
+    let softDeletedIds = [];
+
+    function setStatus(msg, color="#b00020"){
+      statusLineEl.textContent = msg||"";
+      statusLineEl.style.color = color;
+    }
+    function loadSoftDeleted(){
+      const raw = localStorage.getItem("tbr_soft_deleted");
+      if(!raw) return [];
+      try { return JSON.parse(raw) || []; } catch { return []; }
+    }
+    function saveSoftDeleted(arr){
+      localStorage.setItem("tbr_soft_deleted", JSON.stringify(arr));
+    }
+
+    /* --- ROLE HELPERS --- */
+    function shopVisibleForUser(shop, profile) {
+      if (!profile || !profile.role) return !softDeletedIds.includes(shop.id);
+      const role = profile.role;
+      if (softDeletedIds.includes(shop.id)) return false;
+      if (role === "admin" || role === "national") return true;
+      if (role === "regional") {
+        if (!profile.regionId) return false;
+        return (shop.regionId === profile.regionId);
+      }
+      if (role === "yard") {
+        if (profile.yardId) {
+          return (shop.yardId === profile.yardId);
+        }
+        if (profile.regionId) {
+          return (shop.regionId === profile.regionId);
+        }
+        return false;
+      }
+      return true;
+    }
+
+    function lockFiltersByRole(profile) {
+      if (!profile) return;
+      const role = profile.role;
+      if (!role) return;
+
+      if (role === "regional") {
+        currentRegion = profile.regionId || "";
+        regionFilterEl.value = currentRegion;
+        regionFilterEl.disabled = true;
+        buildYardDropdown(currentRegion);
+        yardFilterEl.disabled = false;
+        currentYard = "";
+      } else if (role === "yard") {
+        currentRegion = profile.regionId || "";
+        currentYard   = profile.yardId || "";
+        regionFilterEl.value = currentRegion;
+        regionFilterEl.disabled = true;
+        buildYardDropdown(currentRegion);
+        yardFilterEl.value = currentYard;
+        yardFilterEl.disabled = true;
+      } else {
+        // admin / national
+        regionFilterEl.disabled = false;
+        yardFilterEl.disabled   = false;
+      }
+
+      if (scopeTextEl) {
+        scopeTextEl.textContent = "ข้อมูลของ: " + (
+          profile.yardId || profile.regionId || "ทุกพื้นที่"
+        );
+      }
+      if (roleInfoEl) {
+        roleInfoEl.textContent = "สิทธิ์: " + role;
+      }
+    }
+
+    async function loadUserProfile(uid){
+      const local = sessionStorage.getItem("userProfile");
+      if (local) {
+        try {
+          return JSON.parse(local);
+        } catch(e){}
+      }
+      return { uid, role:"admin" };
+    }
+
+    async function loadShopsFromFirestore(){
+      try{
+        const colRef = collection(db,"shops");
+        const snap = await getDocs(colRef);
+        const arr = [];
+        snap.forEach(docSnap=>{
+          const d = docSnap.data();
+          arr.push({
+            id: docSnap.id,
+            shopName: d.shopName || d.name || "(ไม่มีชื่อร้าน)",
+            location: d.location || {},
+            regionId: d.regionId || "",
+            yardId: d.yardId || "",
+            materialFlow: d.materialFlow || {}
+          });
+        });
+        return arr;
+      }catch(e){
+        setStatus("โหลดจาก Firestore ไม่ได้ (ออฟไลน์) → ใช้ข้อมูลชั่วคราวแทน","#c62828");
+        return [
+          {
+            id:"offline-1",
+            shopName:"สายชมพู รีไซเคิล",
+            location:{
+              address:"29 หมู่ 3 บ้านกอก เขื่องใน",
+              province:"อุบลราชธานี",
+              gps_lat:15.49383,
+              gps_lng:104.47948
+            },
+            regionId:"ภาคอีสานล่าง",
+            yardId:"ลานเอส.เอส. การสุรา"
+          }
+        ];
+      }
+    }
+
+    function buildRegionDropdown(){
+      const regions = [...new Set(YARDS_MASTER.map(y=>y.region))];
+      regionFilterEl.innerHTML = `<option value="">ทั้งหมด</option>` + regions.map(r=>`<option value="${r}">${r}</option>`).join("");
+    }
+    function buildYardDropdown(region=""){
+      const yards = region
+        ? YARDS_MASTER.filter(y=>y.region===region)
+        : YARDS_MASTER;
+      yardFilterEl.innerHTML = `<option value="">ทั้งหมด</option>` + yards.map(y=>`<option value="${y.name}">${y.region} - ${y.name}</option>`).join("");
+    }
+
+    function applyFilter(){
+      filteredShops = allShops.filter(s => {
+        if (!shopVisibleForUser(s, userProfile)) return false;
+        if (currentRegion) {
+          if (s.regionId !== currentRegion && s.region !== currentRegion) return false;
+        }
+        if (currentYard) {
+          if (s.yardId !== currentYard && s.yard !== currentYard) return false;
+        }
+        return true;
+      });
+      renderShops();
+    }
+
+    function renderShops(){
+  shopsBodyEl.innerHTML = "";
+
+  if(!filteredShops.length){
+    shopsBodyEl.innerHTML = `<tr><td colspan="6" style="padding:14px;color:#888">ไม่พบข้อมูลร้านในเงื่อนไขนี้</td></tr>`;
+    listDescEl.textContent = "0 ร้าน";
+    return;
+  }
+
+  filteredShops.forEach((s)=>{
+    const loc = s.location || {};
+    const lat = loc.gps_lat ?? s.lat ?? "";
+    const lng = loc.gps_lng ?? s.lng ?? "";
+
+    // คำนวณชื่อภาค/ลานจากข้อมูลที่เราบันทึกมาจริงๆ
+    const regionName = s.regionId || s.region || "-";
+    const yardName   = s.yardId   || s.yard   || "";
+
+    const tr = document.createElement("tr");
+    tr.id = "row-"+s.id;
+    tr.innerHTML = `
+      <td><input type="checkbox" class="row-check" data-id="${s.id}"></td>
+      <td>${s.shopName || "(ไม่มีชื่อร้าน)"}</td>
+      <td>${(loc.address || "")} ${(loc.province || "")}</td>
+      <td>
+        <span class="tag">${regionName}</span>
+        ${yardName ? `<span class="tag">${yardName}</span>` : ""}
+      </td>
+      <td>${lat && lng ? `${lat}, ${lng}` : "-"}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-sm btn-view" data-id="${s.id}">ดู</button>
+          <button class="btn-sm btn-edit" data-id="${s.id}">แก้ไข</button>
+          <button class="btn-sm btn-del" data-id="${s.id}">ลบ</button>
+        </div>
+      </td>
+    `;
+    shopsBodyEl.appendChild(tr);
+  });
+
+  listDescEl.textContent = `${filteredShops.length} ร้าน`;
+}
+
+    function getShopById(id){
+      return allShops.find(s=>s.id===id);
+    }
+    function focusRow(id){
+      const row = document.getElementById("row-"+id);
+      if(!row) return;
+      row.scrollIntoView({behavior:"smooth",block:"center"});
+      row.classList.add("row-highlight");
+      setTimeout(()=>row.classList.remove("row-highlight"),2000);
+    }
+
+    /* ===== ROW ACTIONS ===== */
+    shopsBodyEl.addEventListener("click", async (ev)=>{
+      const btn = ev.target;
+      const id  = btn.dataset.id;
+      if(!id) return;
+
+      if(btn.classList.contains("btn-view")){
+        const shop = getShopById(id);
+        if(!shop) return;
+        sessionStorage.setItem("currentShop", JSON.stringify(shop));
+        location.href = "./shop-detail.html";
+      }
+
+      if(btn.classList.contains("btn-edit")){
+        const shop = getShopById(id);
+        if(!shop) return;
+        // ส่งต่อให้หน้า add-shop ใช้
+        sessionStorage.setItem("editShop", JSON.stringify(shop));
+        location.href = "./add-shop.html";
+      }
+
+      if(btn.classList.contains("btn-del")){
+        if(!confirm("คุณต้องการลบร้านนี้ใช่หรือไม่")) return;
+
+        // 1) ลบใน Firestore (ถ้าต่อได้)
+        let deletedOnServer = false;
+        try{
+          await deleteDoc(doc(db,"shops",id));
+          deletedOnServer = true;
+        }catch(e){
+          // บริษัทบล็อก / ออฟไลน์
+          console.warn("ลบบน Firestore ไม่ได้ จะเก็บเป็น soft-delete แทน", e);
+        }
+
+        // 2) เก็บ soft-delete ไว้
+        if(!softDeletedIds.includes(id)){
+          softDeletedIds.push(id);
+          saveSoftDeleted(softDeletedIds);
+        }
+
+        // 3) ลบจาก array ปัจจุบัน
+        allShops = allShops.filter(s=>s.id!==id);
+        applyFilter();
+
+        if(deletedOnServer){
+          setStatus("ลบบนฐานข้อมูลสำเร็จ ✅","#2f7d32");
+        }else{
+          setStatus("ลบในหน้าจอแล้ว (บันทึกแบบออฟไลน์ไว้) ✅","#2f7d32");
+        }
+
+        // อัปเดตให้หน้าอื่นด้วย
+        sessionStorage.setItem("allShops", JSON.stringify(allShops));
+      }
+    });
+
+    /* ===== SELECT ALL / CLEAR ===== */
+    btnSelectAll.addEventListener("click", ()=>{
+      document.querySelectorAll(".row-check").forEach(ch=> ch.checked = true);
+    });
+    btnClearAll.addEventListener("click", ()=>{
+      document.querySelectorAll(".row-check").forEach(ch=> ch.checked = false);
+    });
+
+    /* ===== CHECK BEFORE ADD ===== */
+    btnCheckShop.addEventListener("click", ()=>{
+      const kw = (searchBeforeAddEl.value||"").trim();
+      if(!kw){
+        checkResultEl.textContent="กรุณาพิมพ์ชื่อร้านก่อน";
+        return;
+      }
+      const found = allShops.filter(s=>(s.shopName||"").includes(kw));
+      if(!found.length){
+        checkResultEl.style.color="#2f7d32";
+        checkResultEl.innerHTML="ไม่พบร้านชื่อนี้ คุณสามารถเพิ่มใหม่ได้เลย ✅";
+      }else{
+        checkResultEl.style.color="#b00020";
+        checkResultEl.innerHTML = "พบร้านที่ชื่อคล้ายกัน "+found.length+" รายการ:<br>" +
+          found.map(f=>`<div>
+            • ${f.shopName}
+            <button data-goto="${f.id}" class="btn-secondary" style="margin-left:4px;margin-top:4px">เปิดในรายการ</button>
+            <button data-view="${f.id}" class="btn-secondary" style="margin-left:4px;margin-top:4px">ดูเลย</button>
+          </div>`).join("");
+      }
+    });
+    checkResultEl.addEventListener("click",(ev)=>{
+      const go = ev.target.dataset.goto;
+      const view = ev.target.dataset.view;
+      if(go){ focusRow(go); }
+      if(view){
+        const shop = getShopById(view);
+        if(!shop) return;
+        sessionStorage.setItem("currentShop", JSON.stringify(shop));
+        location.href = "./shop-detail.html";
+      }
+    });
+
+    /* ===== ADD NEW ===== */
+    btnAddNew.addEventListener("click", ()=>{
+      sessionStorage.removeItem("editShop");
+      location.href="./add-shop.html";
+    });
+
+    /* ===== SEND TO MAP ===== */
+    btnGoMap.addEventListener("click", ()=>{
+      const picks = [];
+      document.querySelectorAll(".row-check:checked").forEach(ch=>{
+        const id = ch.dataset.id;
+        const shop = getShopById(id);
+        if(shop){
+          const loc = shop.location || {};
+          picks.push({
+            id: shop.id,
+            shopName: shop.shopName,
+            location: {
+              address: loc.address || "",
+              province: loc.province || "",
+              gps_lat: loc.gps_lat ?? shop.lat ?? null,
+              gps_lng: loc.gps_lng ?? shop.lng ?? null
+            },
+            regionId: shop.regionId || "",
+            yardId: shop.yardId || ""
+          });
+        }
+      });
+      if(!picks.length){
+        setStatus("กรุณาเลือกร้านอย่างน้อย 1 ร้านก่อนส่งไปแผนที่","#b00020");
+        return;
+      }
+      sessionStorage.setItem("selectedShopsForMap", JSON.stringify(picks));
+      location.href="./map.html";
+    });
+
+    /* ===== FILTER CHANGE ===== */
+    regionFilterEl.addEventListener("change", ()=>{
+      currentRegion = regionFilterEl.value;
+      buildYardDropdown(currentRegion);
+      currentYard = "";
+      applyFilter();
+    });
+    yardFilterEl.addEventListener("change", ()=>{
+      currentYard = yardFilterEl.value;
+      applyFilter();
+    });
+
+    /* ===== TABLE SEARCH ===== */
+    tableSearchEl.addEventListener("input", ()=>{
+      const q = tableSearchEl.value.toLowerCase().trim();
+      const rows = shopsBodyEl.querySelectorAll("tr");
+      rows.forEach(row=>{
+        const txt = row.textContent.toLowerCase();
+        row.style.display = txt.includes(q) ? "" : "none";
+      });
+    });
+
+    /* ===== LOGOUT ===== */
+    btnLogoutEl.addEventListener("click", async ()=>{
+      try{ await signOut(auth); }catch(e){}
+      sessionStorage.clear();
+      location.href="./login.html";
+    });
+
+    /* ===== INIT ===== */
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){
+        location.href = "./login.html";
+        return;
+      }
+
+      userEmailEl.textContent = user.email || "-";
+
+      // โหลดรายการลบก่อน
+      softDeletedIds = loadSoftDeleted();
+
+      userProfile = await loadUserProfile(user.uid);
+
+      // build dropdown
+      buildRegionDropdown();
+      buildYardDropdown("");
+
+      // ล็อกตาม role
+      lockFiltersByRole(userProfile);
+
+      // โหลดร้าน
+      const shops = await loadShopsFromFirestore();
+      allShops = shops
+        .filter(s => !softDeletedIds.includes(s.id))
+        .map(s => {
+          const loc = s.location || {};
+          return {
+            id: s.id,
+            shopName: s.shopName || s.name || "(ไม่มีชื่อร้าน)",
+            location: loc,
+            regionId: s.regionId || s.region || "",
+            yardId:   s.yardId   || s.yard   || ""
+          };
+        });
+
+      // ให้หน้าอื่นใช้ต่อ
+      sessionStorage.setItem("allShops", JSON.stringify(allShops));
+
+      // กรองครั้งแรก
+      applyFilter();
+    });
+  </script>
+</body>
+</html>

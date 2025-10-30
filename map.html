@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TBR Recycling OPS | แผนที่ & เส้นทาง</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
+
+  <style>
+    :root{
+      --bg-main:#e8f3e8;
+      --bg-card:#fff;
+      --bg-soft:#f5faf5;
+      --text:#1a1a1a;
+      --green:#2f7d32;
+      --bd:1px solid rgba(0,0,0,.07);
+      --shadow:0 16px 40px rgba(0,0,0,.06);
+      --shadow-sm:0 8px 20px rgba(0,0,0,.07);
+    }
+    *{box-sizing:border-box;font-family:"Kanit",system-ui,sans-serif}
+    body{min-height:100vh;background:var(--bg-main);margin:0;display:flex;flex-direction:column}
+
+    /* ===== HEADER / TABS ===== */
+    .topbar-wrap{
+      position:sticky;
+      top:0;
+      z-index:999;
+      background:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:14px 20px 10px;
+    }
+    .topbar-left{display:flex;gap:12px;align-items:center}
+    .logo-box{
+      width:52px;height:52px;border-radius:14px;
+      background:#d9ead9;border:1px solid rgba(0,0,0,.04);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .app-title{display:flex;flex-direction:column}
+    .app-name{font-size:18px;font-weight:600;color:var(--green)}
+    .app-sub{font-size:13px;color:#555}
+    .topbar-right{display:flex;gap:10px;align-items:center}
+    .user-mail{font-size:13px;color:#444}
+    .btn-logout{
+      background:#fff;border:1px solid rgba(0,0,0,.14);
+      border-radius:12px;padding:6px 14px;font-weight:600;cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.05);
+    }
+    .tabs{
+      display:flex;
+      background:linear-gradient(180deg,#fff 0%,#f4f8f4 100%);
+      border-top:1px solid rgba(0,0,0,.03);
+    }
+    .tab{
+      padding:10px 22px;
+      cursor:pointer;
+      font-weight:600;
+      color:#2d3b2f;
+      border-bottom:3px solid transparent;
+    }
+    .tab:hover{background:rgba(232,243,232,.35);}
+    .tab.active{
+      color:var(--green);
+      border-bottom:3px solid var(--green);
+      background:#e8f6ea;
+    }
+
+    main{flex:1;display:flex;min-height:0;}
+    aside{
+      width:360px;
+      background:#fff;
+      border-right:var(--bd);
+      box-shadow:8px 0 30px rgba(0,0,0,.05);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      overflow:auto;
+    }
+    .card{
+      background:var(--bg-soft);border:var(--bd);border-radius:12px;box-shadow:var(--shadow-sm);
+      padding:16px;display:flex;flex-direction:column;gap:12px;
+    }
+    .head{font-weight:600;color:var(--green);display:flex;gap:6px;align-items:center}
+    .desc{font-size:13px;color:#777}
+    label{font-size:13px;font-weight:600;margin-bottom:4px}
+    input,select{padding:8px 10px;border:1px solid rgba(0,0,0,.2);border-radius:8px}
+    input:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(47,125,50,.18)}
+    .submit{background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-weight:600;box-shadow:0 10px 20px rgba(47,125,50,.3);cursor:pointer}
+    .status{min-height:20px;font-size:13px;font-weight:600;color:#b00020;white-space:pre-line}
+    .shop{display:flex;flex-direction:column;gap:8px}
+    .shop-item{background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:10px 12px;box-shadow:var(--shadow-sm);font-size:13px}
+    .shop-item .name{font-weight:600}
+    .mapwrap{flex:1;position:relative;display:flex;flex-direction:column}
+    #map{flex:1;min-height:400px;border-top:var(--bd);border-left:var(--bd);box-shadow:inset 0 0 30px rgba(0,0,0,.05);background:#f0f0f0}
+    .hint{position:absolute;top:16px;right:16px;background:#fff;border:var(--bd);border-radius:12px;box-shadow:var(--shadow);padding:12px 16px;max-width:280px;font-size:13px;z-index:500}
+    .hint .title{font-weight:600;color:var(--green)}
+    .dist{font-weight:600;margin-top:6px}
+    .search-list-item{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:6px;padding:5px 6px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+    .btn-add-sm{background:#e8f6ea;border:none;border-radius:999px;font-size:12px;padding:3px 10px;cursor:pointer;color:#2f7d32;font-weight:600}
+    @media(max-width:960px){
+      main{flex-direction:column}
+      aside{width:100%;max-height:360px;flex:0 0 auto;display:block}
+      .mapwrap{min-height:400px}
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== TOPBAR STICKY ===== -->
+  <div class="topbar-wrap">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="logo-box"><img src="logo.png" alt="TBR Logo"></div>
+        <div class="app-title">
+          <div class="app-name">TBR Recycling OPS</div>
+          <div class="app-sub">แผนที่ &amp; เส้นทาง — ภาค/ลานในความรับผิดชอบ</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-mail" id="userEmail">-</div>
+        <button class="btn-logout" id="btnLogout">ออกจากระบบ</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab" id="tab-list">รายการร้านในความดูแล</div>
+      <div class="tab active" id="tab-map">แผนที่ &amp; เส้นทาง</div>
+      <div class="tab" id="tab-analysis">วิเคราะห์ลูกค้า</div>
+      <div class="tab" id="tab-crm">ความสัมพันธ์ลูกค้า</div>
+    </div>
+  </div>
+
+  <main>
+    <aside>
+      <div class="card">
+        <div class="head">🏭 เลือกลาน/สาขาเป็นจุดเริ่ม</div>
+        <div class="desc">เลือกลานของคุณ หรือกรอกพิกัดเองเพื่อคำนวณระยะ</div>
+        <label>เลือกฐาน (ภาค / ลาน)</label>
+        <select id="yardSelect">
+          <option value="">-- เลือกลานของฉัน --</option>
+        </select>
+        <label>Lat ลาน (ละติจูด)</label>
+        <input id="baseLat" placeholder="เช่น 15.123456"/>
+        <label>Lng ลาน (ลองจิจูด)</label>
+        <input id="baseLng" placeholder="เช่น 104.654321"/>
+        <button class="submit" id="btnRecalc">อัปเดตฐาน/คำนวณใหม่</button>
+        <div class="status" id="statusLine"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">📥 เลือกร้านจาก Dashboard</div>
+        <div class="desc">ใช้ร้านที่หน้า Dashboard เซฟไว้ใน sessionStorage</div>
+        <input id="shopSearch" placeholder="พิมพ์ชื่อร้าน..."/>
+        <div id="shopSearchResult" class="shop" style="max-height:160px;overflow:auto"></div>
+      </div>
+
+      <div class="card">
+        <div class="head">🗂 รายการร้านที่เลือก</div>
+        <div class="desc">เรียงตามระยะ (ใกล้ → ไกล) จากฐาน</div>
+        <div class="shop" id="shopList"></div>
+        <button class="submit" id="btnRoutePreview">ดูเส้นทางถนน (ฐาน ➜ ร้านที่ใกล้สุด)</button>
+        <div class="desc" style="font-size:12px">คำนวณเส้นทางจริงด้วย ORS</div>
+      </div>
+    </aside>
+
+    <section class="mapwrap">
+      <div class="hint">
+        <div class="title">เส้นทางที่เสนอ</div>
+        <small>น้ำเงินเข้ม: วิ่งตามความใกล้ (เส้นตรง)<br/>ส้ม: เส้นทางถนนจริง</small>
+        <div class="dist" id="totalDistText">ระยะรวมโดยประมาณ: - กม.</div>
+        <div class="dist" id="weighWarnText" style="font-size:12px;font-weight:400;color:#b00020;margin-top:8px"></div>
+      </div>
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    /* ============ 1) MASTER ลานแบบฮาร์ดโค้ด ============ */
+    const YARDS_MASTER = [
+      { region:"ภาคเบียร์", name:"โรงงานเศษแก้วบางบาล", address:"ต.พระขาว อ.บางบาล อยุธยา", lat:14.33616, lng:100.47968 },
+      { region:"ภาคเบียร์", name:"จุดรับซื้อเมืองนครสวรรค์ 2", address:"นครสวรรค์", lat:15.63689, lng:100.12873 },
+      { region:"ภาคเบียร์", name:"ลานกำแพงเพชร", address:"กำแพงเพชร", lat:16.17864, lng:99.73326 },
+      { region:"ภาคเบียร์", name:"ลานบางบาล", address:"อยุธยา", lat:14.32986, lng:100.47799 },
+      { region:"ภาคเบียร์", name:"ลานวังน้อย", address:"อยุธยา", lat:14.18774, lng:100.6339 },
+      { region:"ภาคเบียร์", name:"ลานสีมาธุรกิจ", address:"นครสวรรค์", lat:15.93761, lng:99.94671 },
+
+      { region:"ภาคเหนือ", name:"จุดรับซื้อเมืองลำพูน", address:"ลำพูน", lat:18.64271, lng:99.05027 },
+      { region:"ภาคเหนือ", name:"ลานธนภักดี", address:"เชียงใหม่", lat:19.04388, lng:98.96674 },
+      { region:"ภาคเหนือ", name:"ลานมงคลสมัย", address:"อุตรดิตถ์", lat:17.64006, lng:100.2385 },
+
+      { region:"ภาคใต้", name:"จุดรับซื้อเมืองภูเก็ต", address:"ภูเก็ต", lat:7.99312, lng:98.36943 },
+      { region:"ภาคใต้", name:"ลานนทีชัย", address:"สุราษฎร์ธานี", lat:9.08716, lng:99.17357 },
+
+      { region:"ภาคตะวันตก", name:"โกดังวังขนาย", address:"กาญจนบุรี", lat:13.95321, lng:99.65422 },
+      { region:"ภาคตะวันตก", name:"จุดรับซื้อเมืองนครปฐม", address:"นครปฐม", lat:13.8122, lng:100.07596 },
+      { region:"ภาคตะวันตก", name:"ลานแสงโสม", address:"นครปฐม", lat:13.80447, lng:100.2476 },
+      { region:"ภาคตะวันตก", name:"ลานกาญจนสิงขร", address:"กาญจนบุรี", lat:14.08503, lng:99.49957 },
+      { region:"ภาคตะวันตก", name:"ลานยูไนเต็ดฯ", address:"นครปฐม", lat:13.79662, lng:100.18958 },
+      { region:"ภาคตะวันตก", name:"ลานสุรากระทิงแดง", address:"สมุทรสาคร", lat:13.65303, lng:100.28847 },
+      { region:"ภาคตะวันตก", name:"ลานหลักชัยค้าสุรา", address:"ราชบุรี", lat:13.59308, lng:99.80441 },
+
+      { region:"ภาคตะวันออก", name:"จุดรับซื้อบางพลี", address:"สมุทรปราการ", lat:13.59385, lng:100.80435 },
+      { region:"ภาคตะวันออก", name:"ลานบางยี่ขัน", address:"ปทุมธานี", lat:13.95288, lng:100.49976 },
+      { region:"ภาคตะวันออก", name:"จุดรับซื้อบ้านบึง", address:"ชลบุรี", lat:13.60917, lng:100.79854 },
+      { region:"ภาคตะวันออก", name:"จุดรับซื้อกรุงเทพ", address:"กรุงเทพฯ", lat:13.69784, lng:100.48059 },
+      { region:"ภาคตะวันออก", name:"ลานเฟื่องฟูอนันต์", address:"ปราจีนบุรี", lat:13.96075, lng:101.56947 },
+
+      { region:"ภาคอีสานบน", name:"จุดรับซื้อขอนแก่น", address:"ขอนแก่น", lat:16.34200, lng:102.83575 },
+      { region:"ภาคอีสานบน", name:"ลานเทพอรุโณทัย", address:"หนองคาย", lat:17.92127, lng:102.80889 },
+      { region:"ภาคอีสานบน", name:"ลานแก่นขวัญ", address:"ขอนแก่น", lat:16.73728, lng:102.8184 },
+
+      { region:"ภาคอีสานล่าง", name:"โรงงานเศษแก้วโคราช", address:"นครราชสีมา", lat:15.08781, lng:102.20054 },
+      { region:"ภาคอีสานล่าง", name:"จุดรับซื้อโคราช", address:"นครราชสีมา", lat:15.08781, lng:102.20054 },
+      { region:"ภาคอีสานล่าง", name:"จุดรับซื้อวารินฯ", address:"อุบลราชธานี", lat:15.19291, lng:104.82494 },
+      { region:"ภาคอีสานล่าง", name:"ลานเอส.เอส. การสุรา", address:"อุบลราชธานี", lat:15.23868, lng:105.15134 },
+      { region:"ภาคอีสานล่าง", name:"ลานอธิมาตร", address:"บุรีรัมย์", lat:15.30207, lng:103.24892 }
+    ];
+
+    const WEIGHMASTER = [
+      { name:"ด่านชั่งน้ำหนักทางหลวง", note:"มักสุ่มชั่งรถบรรทุกขาเข้าเมือง", lat:15.20000, lng:104.85000 },
+      { name:"จุดชั่งถาวร", note:"ตรวจน้ำหนักบ่อยช่วงกลางวัน", lat:15.10000, lng:102.20000 }
+    ];
+
+    /* ============ 2) FIREBASE ============ */
+    const firebaseConfig = {
+      apiKey:"AIzaSyCn-4Po1XQFNhnFnoIeebKUl3q7BCDLp5w",
+      authDomain:"tbr-recycling-ops.firebaseapp.com",
+      projectId:"tbr-recycling-ops",
+      storageBucket:"tbr-recycling-ops.firebasestorage.app",
+      messagingSenderId:"527372313469",
+      appId:"1:527372313469:web:d7260893ba8deee81fe214"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    /* ============ 3) DOM ============ */
+    const yardSelectEl = document.getElementById("yardSelect");
+    const baseLatEl = document.getElementById("baseLat");
+    const baseLngEl = document.getElementById("baseLng");
+    const btnRecalc = document.getElementById("btnRecalc");
+    const statusLineEl = document.getElementById("statusLine");
+    const shopListEl = document.getElementById("shopList");
+    const totalDistEl = document.getElementById("totalDistText");
+    const weighWarnEl = document.getElementById("weighWarnText");
+    const btnRoutePreview = document.getElementById("btnRoutePreview");
+    const shopSearchEl = document.getElementById("shopSearch");
+    const shopSearchResultEl = document.getElementById("shopSearchResult");
+    const userEmailEl = document.getElementById("userEmail");
+
+    /* ============ 4) STATE ============ */
+    let map, baseMarker=null, shopMarkers=[], linkLines=[], routeLine=null, liveRouteLayer=null, weighMarkers=[];
+    let shopsChosen=[], basePoint={lat:null,lng:null}, userProfile=null;
+    let allShopsFromDashboard = [];
+
+    /* ===== icon ===== */
+    const yardIcon = L.icon({
+      iconUrl:"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='none'><path d='M12 2L3 9h3v10h12V9h3L12 2z' stroke='#1b5e20' stroke-width='2' fill='#a5d6a7'/><circle cx='12' cy='13' r='2.5' fill='#1b5e20'/></svg>`),
+      iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-28]
+    });
+    const shopIcon = L.icon({
+      iconUrl:"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='none'><path d='M4 10l2-5h12l2 5v8H4v-8z' fill='#1565c0' stroke='#0d47a1' stroke-width='1.5'/><path d='M9 14h6v4H9z' fill='#fff'/></svg>`),
+      iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-28]
+    });
+    const weighIcon = L.icon({
+      iconUrl:"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='none'><rect x='3' y='3' width='18' height='18' rx='4' fill='#fff3e0' stroke='#e65100' stroke-width='2'/><path d='M12 7v4m0 0l-4 5h8l-4-5z' stroke='#e65100' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/><circle cx='12' cy='6' r='1' fill='#e65100'/></svg>`),
+      iconSize:[32,32],iconAnchor:[16,32],popupAnchor:[0,-28]
+    });
+
+    /* ============ helpers ============ */
+    function setStatus(msg,color="#b00020"){statusLineEl.textContent=msg||"";statusLineEl.style.color=color}
+    const toRad = d=>d*Math.PI/180;
+    function haversineKm(aLat,aLng,bLat,bLng){
+      if([aLat,aLng,bLat,bLng].some(v=>v==null))return null;
+      const R=6371;const dLat=toRad(bLat-aLat),dLng=toRad(bLng-aLng);
+      const A=Math.sin(dLat/2)**2+Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLng/2)**2;
+      return 2*R*Math.atan2(Math.sqrt(A),Math.sqrt(1-A));
+    }
+    function normalizeRegionName(s){
+      if(!s) return "";
+      const x = String(s).toLowerCase();
+      if(x.includes("เบียร์")) return "ภาคเบียร์";
+      if(x.includes("เหนือ")) return "ภาคเหนือ";
+      if(x.includes("ใต้")) return "ภาคใต้";
+      if(x.includes("ตะวันตก")) return "ภาคตะวันตก";
+      if(x.includes("ตะวันออก")) return "ภาคตะวันออก";
+      if(x.includes("อีสานบน")) return "ภาคอีสานบน";
+      if(x.includes("อีสานล่าง")) return "ภาคอีสานล่าง";
+      return s;
+    }
+
+    /* ============ กรองลานตามสิทธิ์ ============ */
+    function getYardsForUser(profile){
+      // ไม่มีโปรไฟล์เลย → แสดงทุกลาน เพื่อให้เทสได้
+      if(!profile || !profile.role){
+        return YARDS_MASTER;
+      }
+
+      const role = String(profile.role).toLowerCase();
+
+      if(role === "admin" || role === "national"){
+        return YARDS_MASTER;
+      }
+
+      if(role === "regional"){
+        const userRegion = normalizeRegionName(profile.regionId || profile.region || "");
+        return YARDS_MASTER.filter(y=>{
+          const yardRegion = normalizeRegionName(y.region);
+          return yardRegion && userRegion && yardRegion === userRegion;
+        });
+      }
+
+      if(role === "yard"){
+        if(profile.yardId){
+          // ถ้า master มี field นี้
+          const found = YARDS_MASTER.filter(y=>(y.yardId && y.yardId===profile.yardId) || y.name===profile.yardId);
+          if(found.length) return found;
+        }
+        // ไม่มี yardId ก็หาจากภาค
+        if(profile.regionId){
+          const userRegion = normalizeRegionName(profile.regionId);
+          return YARDS_MASTER.filter(y=> normalizeRegionName(y.region) === userRegion);
+        }
+      }
+
+      return YARDS_MASTER;
+    }
+
+    /* ============ map init ============ */
+    function initMap(){
+      const el = document.getElementById("map");
+      if(typeof L === "undefined"){
+        el.innerHTML = "<div style='padding:16px;background:#fff;border:1px solid rgba(0,0,0,.15);border-radius:12px;max-width:360px;margin:16px;color:#b00020'>❌ โหลดแผนที่ไม่ได้</div>";
+        return;
+      }
+      map = L.map("map");
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:20,attribution:"&copy; OpenStreetMap"}).addTo(map);
+      map.setView([15,100],6);
+    }
+
+    /* ============ render yard dropdown ============ */
+    function populateYardSelectForProfile(profile){
+      yardSelectEl.innerHTML = `<option value="">-- เลือกลานของฉัน --</option>`;
+      const allowed = getYardsForUser(profile);
+      allowed.forEach((y,i)=>{
+        const o = document.createElement("option");
+        o.value = String(i);
+        o.textContent = `${y.region} - ${y.name}`;
+        yardSelectEl.appendChild(o);
+      });
+    }
+
+    /* ============ load shops from session (dashboard) ============ */
+    function loadAllShopsFromSession(){
+      const raw = sessionStorage.getItem("allShops");
+      if(!raw) return [];
+      try{
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch{return [];}
+    }
+
+    function shopVisibleForUser(shop, profile){
+      if(!profile || !profile.role) return true;
+      const role = String(profile.role).toLowerCase();
+      if(role==="admin" || role==="national") return true;
+      if(role==="regional"){
+        return normalizeRegionName(shop.regionId) === normalizeRegionName(profile.regionId);
+      }
+      if(role==="yard"){
+        if(profile.yardId && shop.yardId) return shop.yardId === profile.yardId;
+        if(profile.regionId) return normalizeRegionName(shop.regionId) === normalizeRegionName(profile.regionId);
+      }
+      return true;
+    }
+
+    function renderSearchList(keyword=""){
+      shopSearchResultEl.innerHTML = "";
+      const kw = keyword.trim().toLowerCase();
+      const list = allShopsFromDashboard.filter(s=>{
+        const n = (s.shopName || s.name || "").toLowerCase();
+        return !kw || n.includes(kw);
+      }).slice(0,25);
+
+      if(!list.length){
+        shopSearchResultEl.innerHTML = "<div style='font-size:12px;color:#999'>ไม่พบร้าน หรือยังไม่ได้เปิด dashboard ก่อน</div>";
+        return;
+      }
+
+      list.forEach(s=>{
+        const div = document.createElement("div");
+        div.className = "search-list-item";
+        div.innerHTML = `
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600">${s.shopName || s.name || "(ไม่มีชื่อร้าน)"}</div>
+            <div style="font-size:11px;color:#777">${s.location?.province || s.province || ""}</div>
+          </div>
+          <button class="btn-add-sm" data-id="${s.id || s.docId || ""}">เพิ่ม</button>
+        `;
+        shopSearchResultEl.appendChild(div);
+      });
+    }
+
+    shopSearchEl.addEventListener("input", ()=>{
+      renderSearchList(shopSearchEl.value);
+    });
+
+    shopSearchResultEl.addEventListener("click",(ev)=>{
+      const id = ev.target.dataset.id;
+      if(!id) return;
+      const found = allShopsFromDashboard.find(s => (s.id||s.docId) === id);
+      if(!found) return;
+      const loc = found.location || {};
+      const lat = loc.gps_lat ?? found.lat ?? null;
+      const lng = loc.gps_lng ?? found.lng ?? null;
+      if(shopsChosen.some(s=>s.id===id)){
+        setStatus("ร้านนี้ถูกเพิ่มแล้ว","#2f7d32");
+        return;
+      }
+      shopsChosen.push({
+        id: id,
+        name: found.shopName || found.name || "(ไม่มีชื่อร้าน)",
+        lat, lng,
+        address: loc.address || found.address || "",
+        province: loc.province || found.province || ""
+      });
+      redrawAll();
+      setStatus("เพิ่มร้านจาก dashboard แล้ว","#2f7d32");
+    });
+
+    /* ============ ใส่ลานที่เลือก ============ */
+    function onChooseYard(){
+      const i = yardSelectEl.value;
+      if(!i) return;
+      const allowed = getYardsForUser(userProfile || {});
+      const y = allowed[+i];
+      if(!y) return;
+      baseLatEl.value = y.lat;
+      baseLngEl.value = y.lng;
+      basePoint.lat = y.lat;
+      basePoint.lng = y.lng;
+      setStatus(`ใช้ลาน: ${y.name} (${y.region}) ✅`,"#2f7d32");
+      redrawAll();
+      showAllWeighStationsNearBase(100);
+    }
+
+    function recalcFromInputs(){
+      const lat = parseFloat(baseLatEl.value.trim());
+      const lng = parseFloat(baseLngEl.value.trim());
+      if(isNaN(lat) || isNaN(lng)){
+        setStatus("พิกัดฐานไม่ถูกต้อง","#b00020");
+        return;
+      }
+      basePoint.lat = lat;
+      basePoint.lng = lng;
+      setStatus("อัปเดตพิกัดฐานแล้ว ✅","#2f7d32");
+      redrawAll();
+      showAllWeighStationsNearBase(100);
+    }
+
+    /* ============ แสดงบนแผนที่ ============ */
+    function redrawAll(){
+      if(!map) return;
+      if(baseMarker){map.removeLayer(baseMarker);baseMarker=null}
+      shopMarkers.forEach(m=>map.removeLayer(m)); shopMarkers=[];
+      linkLines.forEach(l=>map.removeLayer(l)); linkLines=[];
+      if(routeLine){map.removeLayer(routeLine);routeLine=null}
+
+      const bounds=[]; shopListEl.innerHTML="";
+
+      if(basePoint.lat!=null && basePoint.lng!=null){
+        baseMarker = L.marker([basePoint.lat,basePoint.lng],{title:"ฐาน / ลานของฉัน",icon:yardIcon}).addTo(map);
+        bounds.push([basePoint.lat,basePoint.lng]);
+      }
+
+      const withDist = shopsChosen.map(s=>({
+        ...s,
+        distKm: (basePoint.lat!=null ? haversineKm(basePoint.lat,basePoint.lng,s.lat,s.lng):null)
+      })).sort((a,b)=>(a.distKm??1e9)-(b.distKm??1e9));
+
+      withDist.forEach((s,i)=>{
+        const dStr = s.distKm==null ? "ระยะทาง: ไม่ทราบ" : `ระยะทาง ~ ${s.distKm.toFixed(2)} กม.`;
+        const div = document.createElement("div");
+        div.className = "shop-item";
+        div.innerHTML = `
+          <div class="name">${i+1}. ${s.name}</div>
+          <div>${s.province||""}</div>
+          <div style="word-break:break-word">${s.address||""}</div>
+          <div>Lat ${s.lat??"-"}, Lng ${s.lng??"-"}</div>
+          <div style="color:#2f7d32;font-weight:600">${dStr}</div>
+        `;
+        shopListEl.appendChild(div);
+
+        if(s.lat!=null && s.lng!=null){
+          const mk = L.marker([s.lat,s.lng],{icon:shopIcon}).addTo(map);
+          mk.bindPopup(`<b>${s.name}</b><br/>${s.address||""}<br/>${dStr}`);
+          shopMarkers.push(mk);
+          bounds.push([s.lat,s.lng]);
+
+          if(basePoint.lat!=null){
+            const line = L.polyline([[basePoint.lat,basePoint.lng],[s.lat,s.lng]],{color:"#1a237e",weight:2,opacity:.5,dashArray:"4,6"}).addTo(map);
+            linkLines.push(line);
+          }
+        }
+      });
+
+      if(basePoint.lat!=null){
+        const valid = shopsChosen.filter(s=>s.lat!=null && s.lng!=null);
+        let cur = [basePoint.lat,basePoint.lng], pts=[cur], total=0;
+        valid.forEach(s=>{
+          pts.push([s.lat,s.lng]);
+          total += haversineKm(cur[0],cur[1],s.lat,s.lng) || 0;
+          cur=[s.lat,s.lng];
+        });
+        if(pts.length>1){
+          routeLine = L.polyline(pts,{color:"#0d47a1",weight:4,opacity:.85}).addTo(map);
+        }
+        totalDistEl.textContent = pts.length>1 ? `ระยะรวมโดยประมาณ (เส้นตรง): ${total.toFixed(2)} กม.` : "ระยะรวมโดยประมาณ: - กม.";
+      }
+
+      if(bounds.length){
+        map.fitBounds(L.latLngBounds(bounds),{padding:[40,40]});
+      }
+    }
+
+    /* ============ ด่านชั่งรอบฐาน ============ */
+    function showAllWeighStationsNearBase(radiusKm=100){
+      if(!map || basePoint.lat==null) return;
+      if(weighMarkers.length){weighMarkers.forEach(m=>map.removeLayer(m));weighMarkers=[]}
+      const lines=[];
+      WEIGHMASTER.forEach(st=>{
+        const d = haversineKm(basePoint.lat,basePoint.lng,st.lat,st.lng);
+        if(d!=null && d<=radiusKm){
+          const mk = L.marker([st.lat,st.lng],{icon:weighIcon}).addTo(map);
+          mk.bindPopup(`<div><b>⚖ ${st.name}</b><br/>ระยะจากฐาน ~ ${d.toFixed(2)} กม.</div>`);
+          weighMarkers.push(mk);
+          lines.push(`⚖ ${st.name} (${d.toFixed(1)} กม.)`);
+        }
+      });
+      weighWarnEl.textContent = lines.length ? `⚖ ด่าน/จุดตรวจในรัศมี ${radiusKm} กม.:\n${lines.join("\n")}` : "";
+    }
+
+    /* ============ ORS route ============ */
+    async function fetchAndDrawDrivingRoute(startLat,startLng,endLat,endLng){
+      if(typeof L==="undefined"){setStatus("โหลดแผนที่ไม่ได้", "#b00020");return;}
+      if(liveRouteLayer){map.removeLayer(liveRouteLayer);liveRouteLayer=null}
+
+      const key = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImQ5OGFkNDU3NDc4ZTQxOWE4OGFjOTAzNmE4YzhjNzRiIiwiaCI6Im11cm11cjY0In0=";
+      const url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${encodeURIComponent(key)}&start=${startLng},${startLat}&end=${endLng},${endLat}`;
+      try{
+        const res = await fetch(url);
+        if(!res.ok) throw new Error("ORS error "+res.status);
+        const data = await res.json();
+        const coords = data.features[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+        liveRouteLayer = L.polyline(coords,{color:"#ff5722",weight:5,opacity:.9}).addTo(map);
+        map.fitBounds(liveRouteLayer.getBounds(),{padding:[40,40]});
+        const dist = data.features[0].properties.summary.distance;
+        const dur  = data.features[0].properties.summary.duration;
+        totalDistEl.textContent = `เส้นทางจริง ~ ${(dist/1000).toFixed(2)} กม. / ${(dur/60).toFixed(1)} นาที`;
+
+        // เตือนด่านใกล้เส้น 10 กม.
+        const hits = [];
+        WEIGHMASTER.forEach(st=>{
+          let best=Infinity;
+          coords.forEach(pt=>{
+            const d = haversineKm(st.lat,st.lng,pt[0],pt[1]);
+            if(d!=null && d<best) best=d;
+          });
+          if(best<=10){
+            hits.push({...st,minDistKm:best});
+          }
+        });
+        if(hits.length){
+          weighWarnEl.textContent = "⚖ พบจุดตรวจใกล้เส้นทาง:\n" + hits.map(h=>`- ${h.name} (${h.minDistKm.toFixed(1)} กม.)`).join("\n");
+          hits.forEach(h=>{
+            const mk = L.marker([h.lat,h.lng],{icon:weighIcon}).addTo(map);
+            weighMarkers.push(mk);
+          });
+        }
+
+        setStatus("คำนวณเส้นทางถนนสำเร็จ ✅","#2f7d32");
+      }catch(e){
+        setStatus("คำนวณเส้นทางถนนไม่สำเร็จ: "+e.message,"#b00020");
+      }
+    }
+
+    function onPreviewRouteClick(){
+      if(basePoint.lat==null || shopsChosen.length===0){
+        setStatus("ยังไม่มีพิกัดฐานหรือลูกค้า","#b00020");
+        return;
+      }
+      let best=null, bd=Infinity;
+      shopsChosen.forEach(s=>{
+        if(s.lat!=null){
+          const d=haversineKm(basePoint.lat,basePoint.lng,s.lat,s.lng);
+          if(d<bd){bd=d;best=s;}
+        }
+      });
+      if(!best){
+        setStatus("ไม่มีร้านที่มีพิกัด","#b00020");
+        return;
+      }
+      fetchAndDrawDrivingRoute(basePoint.lat,basePoint.lng,best.lat,best.lng);
+    }
+
+    /* ============ auth ============ */
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){
+        location.href="./login.html";
+        return;
+      }
+      userEmailEl.textContent = user.email || "-";
+
+      // โหลดโปรไฟล์จาก Firestore
+      let profile = null;
+      try{
+        const snap = await getDoc(doc(db,"users",user.uid));
+        if(snap.exists()){
+          profile = snap.data();
+        }else{
+          // offline / ยังไม่สร้าง → ลองเอาจาก session
+          const local = sessionStorage.getItem("userProfile");
+          if(local) profile = JSON.parse(local);
+        }
+      }catch(e){
+        // ถ้าอ่านไม่ได้ → เอาจาก session
+        const local = sessionStorage.getItem("userProfile");
+        if(local) profile = JSON.parse(local);
+      }
+
+      // ถ้ายังไม่มีเลย → ให้เป็นแบบเห็นทุกลานก่อน
+      if(!profile){
+        profile = { role:"admin" }; // โหมดเทส
+      }
+      userProfile = profile;
+      sessionStorage.setItem("userProfile",JSON.stringify(profile));
+
+      // เติมลานตามสิทธิ์
+      populateYardSelectForProfile(profile);
+
+      // ถ้าโปรไฟล์มีพิกัดลาน → ใส่ให้เลย
+      if(profile.yardLat!=null && profile.yardLng!=null){
+        basePoint.lat = profile.yardLat;
+        basePoint.lng = profile.yardLng;
+        baseLatEl.value = profile.yardLat;
+        baseLngEl.value = profile.yardLng;
+      }
+
+      // โหลดร้านจาก dashboard แล้วกรองตามสิทธิ์
+      allShopsFromDashboard = loadAllShopsFromSession().filter(s=>shopVisibleForUser(s,profile));
+      renderSearchList("");
+
+      // init map
+      initMap();
+      if(basePoint.lat!=null) map.setView([basePoint.lat,basePoint.lng],10);
+      redrawAll();
+      if(basePoint.lat!=null) showAllWeighStationsNearBase(100);
+    });
+
+    /* ============ events ============ */
+    yardSelectEl.addEventListener("change", onChooseYard);
+    btnRecalc.addEventListener("click", recalcFromInputs);
+    btnRoutePreview.addEventListener("click", onPreviewRouteClick);
+
+    document.getElementById("tab-list").onclick = ()=>location.href="./dashboard.html";
+    document.getElementById("tab-map").onclick  = ()=>location.href="./map.html";
+    document.getElementById("tab-analysis").onclick  = ()=>location.href="./shop-analysis.html";
+    document.getElementById("tab-crm").onclick  = ()=>location.href="./customer-relations.html";
+
+    document.getElementById("btnLogout").addEventListener("click", async ()=>{
+      try{ await signOut(auth); }catch(e){}
+      sessionStorage.clear();
+      location.href="./login.html";
+    });
+  </script>
+</body>
+</html>

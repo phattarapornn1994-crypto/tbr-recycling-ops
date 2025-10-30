@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TBR Recycling OPS | เพิ่ม/แก้ไขร้าน</title>
+
+  <!-- ใช้ฟอนต์เดียวกับ dashboard -->
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --bg-main:#e8f3e8;
+      --bg-soft:#f5faf5;
+      --accent:#2f7d32;
+      --bd-soft:1px solid rgba(0,0,0,.05);
+      --shadow:0 16px 40px rgba(0,0,0,.05);
+      --shadow-sm:0 8px 24px rgba(0,0,0,.06);
+    }
+    *{
+      box-sizing:border-box;
+      font-family:"Kanit",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      line-height:1.35;
+    }
+    body{
+      margin:0;
+      background:var(--bg-main);
+      min-height:100vh;
+      font-size:14px;
+      color:#12331a;
+    }
+
+    /* ===== topbar แบบเดียวกับ dashboard ===== */
+    .topbar-wrap{
+      position:sticky;
+      top:0;
+      z-index:999;
+      background:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.05);
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:14px 20px 10px;
+    }
+    .topbar-left{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo-box{
+      width:52px;height:52px;
+      border-radius:14px;
+      background:#d9ead9;
+      border:1px solid rgba(0,0,0,.03);
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+      box-shadow:var(--shadow-sm);
+    }
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .app-title{display:flex;flex-direction:column;gap:2px}
+    .app-name{font-size:18px;font-weight:600;color:var(--accent)}
+    .app-sub{font-size:13px;color:#555}
+
+    .topbar-right{
+      display:flex;gap:10px;align-items:center
+    }
+    .user-mail{font-size:13px;color:#444}
+    .role-chip{
+      background:#fff;
+      border:1px solid rgba(47,125,50,.28);
+      border-radius:999px;
+      padding:4px 12px;
+      font-size:12px;
+      font-weight:600;
+      color:#166534;
+    }
+    .btn-logout{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.14);
+      border-radius:10px;
+      padding:6px 14px;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.05);
+      font-size:13px;
+    }
+
+    .tabs{
+      display:flex;
+      background:linear-gradient(180deg,#fff 0%,#f4f8f4 100%);
+      border-top:1px solid rgba(0,0,0,.03);
+    }
+    .tab{
+      padding:10px 22px;
+      cursor:pointer;
+      font-weight:600;
+      color:#2d3b2f;
+      border-bottom:3px solid transparent;
+    }
+    .tab:hover{background:rgba(232,243,232,.35);}
+    .tab.active{
+      color:var(--accent);
+      border-bottom:3px solid var(--accent);
+      background:#e8f6ea;
+    }
+
+    /* ===== main form ===== */
+    main{padding:18px;min-height:calc(100vh - 120px);}
+    .form-shell{
+      max-width:1300px;
+      margin:0 auto 80px;
+      background:#fff;
+      border-radius:20px;
+      border:var(--bd-soft);
+      box-shadow:var(--shadow);
+      padding:20px 20px 110px;
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+    .section-block{
+      background:var(--bg-soft);
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.025);
+      box-shadow:var(--shadow-sm);
+      padding:16px 16px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .section-head{display:flex;gap:10px;align-items:flex-start}
+    .section-icon{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;color:#2f7d32;font-size:16px;flex:0 0 32px}
+    .section-title-main{font-size:15px;font-weight:600;color:#275d30}
+    .section-title-sub{font-size:12.5px;color:#788}
+
+    .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .field-block{display:flex;flex-direction:column;gap:5px}
+    .field-label-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .field-label{font-size:13px;font-weight:600}
+    .field-hint{font-size:11.5px;color:#779}
+
+    input[type="text"],input[type="number"],select,textarea{
+      background:#fff;border:1px solid rgba(0,0,0,.14);border-radius:8px;min-height:38px;padding:7px 10px;font-size:13px;
+    }
+    textarea{min-height:64px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#2f7d32;box-shadow:0 0 0 3px rgba(47,125,50,.12);}
+
+    .check-flex{display:flex;flex-wrap:wrap;gap:10px}
+    .check-flex label{background:#fff;border:1px solid rgba(0,0,0,.05);padding:6px 10px;border-radius:10px;display:flex;gap:6px;align-items:center;cursor:pointer;font-size:13px}
+
+    .mat-container{background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:12px;overflow-x:auto}
+    table.material-table{width:100%;border-collapse:collapse;min-width:980px}
+    table.material-table thead{background:#e8f6ea}
+    table.material-table th,table.material-table td{padding:8px 10px;border-bottom:1px solid rgba(0,0,0,.035);font-size:13px}
+    .btn-add-row{background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:5px 10px;font-weight:600;margin-top:10px;cursor:pointer;width:max-content}
+    .btn-del-row{background:#fff;border:1px solid rgba(176,0,32,.4);color:#b00020;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px}
+
+    .form-footer{position:sticky;bottom:0;background:#fff;border-top:1px solid rgba(0,0,0,.04);padding:13px 0 0;display:flex;justify-content:space-between;gap:10px;border-radius:0 0 20px 20px}
+    .status-line{font-size:12.6px;font-weight:600;white-space:pre-line;color:#b00020;min-height:18px}
+    .btn-save{background:#2f7d32;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer;box-shadow:0 10px 18px rgba(47,125,50,.35);font-size:13.5px}
+
+    .owner-row{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+    .owner-row input{flex:1}
+    .btn-mini{background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;padding:4px 8px;font-size:12.5px;cursor:pointer}
+    .btn-mini-danger{border:1px solid rgba(176,0,32,.4);color:#b00020}
+
+    .geo-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+
+    @media(max-width:768px){
+      .topbar{flex-direction:column;align-items:flex-start}
+      .form-shell{padding:16px 14px 120px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== TOPBAR (เหมือน dashboard) ===== -->
+<div class="topbar-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-box">
+        <img src="logo.png" alt="TBR">
+      </div>
+      <div class="app-title">
+        <div class="app-name">TBR Recycling OPS</div>
+        <div class="app-sub">เพิ่ม/แก้ไขข้อมูลร้านรับซื้อในความดูแล</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-mail" id="userEmail">-</div>
+      <div class="role-chip" id="roleChip" style="display:none;">สิทธิ์: -</div>
+      <button class="btn-logout" id="btnLogout">ออกจากระบบ</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab" onclick="location.href='dashboard.html'">รายการร้านในความดูแล</div>
+    <div class="tab" onclick="location.href='map.html'">แผนที่ &amp; เส้นทาง</div>
+    <div class="tab" onclick="location.href='shop-analysis.html'">วิเคราะห์ลูกค้า</div>
+    <div class="tab" onclick="location.href='customer-relations.html'">ความสัมพันธ์ลูกค้า</div>
+    <div class="tab active">เพิ่ม / แก้ไขร้าน</div>
+  </div>
+</div>
+
+<main>
+  <form id="shopForm" class="form-shell">
+
+    <!-- 0. สิทธิ์ + ภาค -->
+    <section class="section-block" id="accessSection">
+      <div class="section-head">
+        <div class="section-icon">🛡️</div>
+        <div>
+          <div class="section-title-main">0. สิทธิ์และพื้นที่ที่ต้องผูก</div>
+          <div class="section-title-sub">ถ้าเป็น nation / admin / ภาค → ต้องเลือกภาคก่อนทุกครั้ง</div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field-block">
+          <div class="field-label">สิทธิ์ของผู้ใช้</div>
+          <input id="userRole" type="text" readonly>
+        </div>
+        <div class="field-block" id="regionWrap">
+          <div class="field-label">ภาค / Region <span style="color:#b00020">*</span></div>
+          <select id="regionSelect" required>
+            <option value="">เลือก</option>
+          </select>
+          <div class="field-hint">เลือก</div>
+        </div>
+        <div class="field-block" id="yardWrap">
+          <div class="field-label">ลานที่รับผิดชอบ <span style="color:#b00020">*</span></div>
+          <select id="yardSelect" required disabled>
+            <option value="">เลือกภาคก่อน</option>
+          </select>
+          <div class="field-hint" id="yardHint">เลือก</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. ข้อมูลร้าน -->
+    <section class="section-block">
+      <div class="section-head">
+        <div class="section-icon">🏪</div>
+        <div>
+          <div class="section-title-main">1. ข้อมูลร้าน / ผู้ติดต่อหลัก</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-block">
+          <div class="field-label-row">
+            <div class="field-label">ชื่อร้าน</div>
+            <div class="field-hint">เช่น สายชมพู รีไซเคิล</div>
+          </div>
+          <input id="shopName" type="text" required>
+        </div>
+        <div class="field-block">
+          <div class="field-label">เบอร์โทรศัพท์หลัก</div>
+          <input id="phone" type="text" placeholder="0812345678">
+        </div>
+      </div>
+
+      <!-- owner dynamic -->
+      <div class="field-block">
+        <div class="field-label-row">
+          <div class="field-label">ชื่อเจ้าของ / ผู้จัดการ (หลายคน)</div>
+          <button type="button" class="btn-mini" id="btnAddOwner">+ เพิ่มคน</button>
+        </div>
+        <div id="ownerList"></div>
+      </div>
+
+      <!-- address manual -->
+      <div class="field-block">
+        <div class="field-label-row">
+          <div class="field-label">ที่อยู่ (กรอกเองก่อน)</div>
+        </div>
+        <div class="grid-2">
+          <input id="addrLine1" type="text" placeholder="บ้านเลขที่ / หมู่บ้าน / อาคาร">
+          <input id="addrLine2" type="text" placeholder="ซอย / ถนน / จุดสังเกต">
+        </div>
+      </div>
+
+      <!-- address with search -->
+      <div class="field-block">
+        <div class="field-label-row">
+          <div class="field-label">ที่อยู่ (เลือกจังหวัด → อำเภอ → ตำบล)</div>
+          <div class="field-hint">มีช่องพิมพ์ค้นหา</div>
+        </div>
+        <div class="geo-row">
+          <div class="field-block">
+            <input id="geoProvinceSearch" type="text" placeholder="พิมพ์หาจังหวัด...">
+            <select id="geoProvince">
+              <option value="">เลือกจังหวัด</option>
+            </select>
+          </div>
+          <div class="field-block">
+            <input id="geoDistrictSearch" type="text" placeholder="พิมพ์หาอำเภอ..." disabled>
+            <select id="geoDistrict" disabled>
+              <option value="">เลือกอำเภอ</option>
+            </select>
+          </div>
+          <div class="field-block">
+            <input id="geoSubdistrictSearch" type="text" placeholder="พิมพ์หาตำบล..." disabled>
+            <select id="geoSubdistrict" disabled>
+              <option value="">เลือกตำบล</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label-row">
+          <div class="field-label">ที่อยู่รวม (ระบบประกอบให้)</div>
+        </div>
+        <textarea id="address" placeholder="เลขที่ ... ต. ... อ. ... จ. ..."></textarea>
+      </div>
+
+      <div class="grid-3">
+        <div class="field-block">
+          <div class="field-label">GPS Lat (ละติจูด)</div>
+          <input id="gpsLat" type="text" placeholder="15.49383">
+        </div>
+        <div class="field-block">
+          <div class="field-label">GPS Lng (ลองจิจูด)</div>
+          <input id="gpsLng" type="text" placeholder="104.47948">
+        </div>
+        <div class="field-block" style="display:flex;align-items:flex-end">
+          <button type="button" id="btnGetLocation" class="btn-mini">📍 ดึงพิกัดปัจจุบัน</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ขีดความสามารถ -->
+    <section class="section-block">
+      <div class="section-head">
+        <div class="section-icon">⚙️</div>
+        <div>
+          <div class="section-title-main">2. ขีดความสามารถในการดำเนินงาน</div>
+        </div>
+      </div>
+      <div class="field-block">
+        <div class="field-label">อุปกรณ์ที่มี</div>
+        <div class="check-flex">
+          <label><input type="checkbox" class="tool-check" value="Baler / เครื่องอัดก้อน"> Baler / เครื่องอัดก้อน</label>
+          <label><input type="checkbox" class="tool-check" value="Compactor"> Compactor</label>
+          <label><input type="checkbox" class="tool-check" value="รถบรรทุก / รถตัวเอง"> รถบรรทุก / รถตัวเอง</label>
+          <label><input type="checkbox" class="tool-check" value="ตาชั่ง/เครื่องชั่ง"> ตาชั่ง/เครื่องชั่ง</label>
+          <label><input type="checkbox" class="tool-check" value="โฟล์คลิฟต์"> โฟล์คลิฟต์</label>
+          <label><input type="checkbox" class="tool-check tool-other-flag" value="อื่นๆ"> อื่นๆ</label>
+          <input id="toolOtherText" type="text" placeholder="ระบุอุปกรณ์อื่น">
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field-block">
+          <div class="field-label">วิธีการขนส่งหลัก (ติ๊กได้หลายข้อ)</div>
+          <div class="check-flex" id="transportChecks">
+            <label><input type="checkbox" value="own_truck"> รถของร้านเอง</label>
+            <label><input type="checkbox" value="hired"> จ้างเหมารถ</label>
+            <label><input type="checkbox" value="third_party"> ขนส่งภายนอก</label>
+            <label><input type="checkbox" value="route_pickup"> รถ TBR ไปรับ</label>
+            <label><input type="checkbox" value="other"> อื่นๆ</label>
+          </div>
+          <input id="transportOther" type="text" placeholder="ถ้าเลือกอื่นๆ ให้ระบุที่นี่">
+        </div>
+        <div class="field-block">
+          <div class="field-label">ความจุพื้นที่จัดเก็บโดยประมาณ</div>
+          <input id="storageCapacity" type="text" placeholder="50 ตัน / 200 ตร.ม.">
+        </div>
+        <div class="field-block">
+          <div class="field-label">การคัดแยกวัสดุ (ติ๊กได้หลายข้อ)</div>
+          <div class="check-flex" id="sortingChecks">
+            <label><input type="checkbox" value="manual"> คัดด้วยแรงคน</label>
+            <label><input type="checkbox" value="machine-assisted"> มีเครื่องช่วย</label>
+            <label><input type="checkbox" value="none"> ไม่มีการคัดแยก</label>
+            <label><input type="checkbox" value="other"> อื่นๆ</label>
+          </div>
+          <input id="sortingOther" type="text" placeholder="ถ้าเลือกอื่นๆ ให้ระบุที่นี่">
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. สินค้า -->
+    <section class="section-block">
+      <div class="section-head">
+        <div class="section-icon">📦</div>
+        <div>
+          <div class="section-title-main">3. ปริมาณสินค้าและประวัติการทำธุรกรรม</div>
+        </div>
+      </div>
+      <div class="mat-container">
+        <table class="material-table" id="matTable">
+          <thead>
+          <tr>
+            <th>ประเภทสินค้า</th>
+            <th>รายละเอียดเพิ่มเติม</th>
+            <th>ปริมาณ/เดือน</th>
+            <th>หน่วย</th>
+            <th>ความถี่ส่งขาย</th>
+            <th>ขายให้</th>
+            <th>หมายเหตุ</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody id="matTbody"></tbody>
+        </table>
+      </div>
+      <button type="button" class="btn-add-row" id="btnAddMat">+ เพิ่มรายการสินค้า</button>
+    </section>
+
+    <!-- 6. การสื่อสาร -->
+    <section class="section-block">
+      <div class="section-head"><div class="section-icon">📞</div><div><div class="section-title-main">6. การตั้งค่าการสื่อสาร</div></div></div>
+      <div class="grid-3">
+        <div class="field-block">
+          <div class="field-label">ช่องทางที่ชอบ</div>
+          <div class="check-flex">
+            <label><input type="checkbox" class="comm-channel" value="phone"> โทรศัพท์</label>
+            <label><input type="checkbox" class="comm-channel" value="line"> LINE</label>
+            <label><input type="checkbox" class="comm-channel" value="facebook"> Facebook</label>
+            <label><input type="checkbox" class="comm-channel" value="visit"> เข้าพบหน้าร้าน</label>
+            <label><input type="checkbox" class="comm-channel" value="other"> อื่นๆ</label>
+          </div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">ภาษาที่ต้องการ (เลือกได้หลายภาษา)</div>
+          <div class="check-flex" id="langChecks">
+            <label><input type="checkbox" value="thai"> ไทย</label>
+            <label><input type="checkbox" value="english"> อังกฤษ</label>
+            <label><input type="checkbox" value="chinese"> จีน</label>
+            <label><input type="checkbox" value="myanmar"> พม่า</label>
+            <label><input type="checkbox" value="other"> อื่นๆ</label>
+          </div>
+          <input id="languageOther" type="text" placeholder="ระบุภาษาอื่นๆ" style="display:none;margin-top:6px;">
+        </div>
+        <div class="field-block">
+          <div class="field-label">การตอบสนอง</div>
+          <select id="responseSpeed">
+            <option value="">เลือก</option>
+            <option value="fast">เร็ว</option>
+            <option value="normal">ปกติ</option>
+            <option value="slow">ช้า</option>
+          </select>
+          <label style="margin-top:6px"><input type="checkbox" id="wantUpdates"> สนใจรับข่าวสาร</label>
+        </div>
+      </div>
+    </section>
+
+    <div class="form-footer">
+      <div class="status-line" id="statusLine"></div>
+      <button type="submit" class="btn-save">บันทึกข้อมูลร้าน</button>
+    </div>
+  </form>
+</main>
+
+<!-- โหลด master ภาค/ลาน -->
+<script src="./tbr-masters.js"></script>
+<!-- master จังหวัด -->
+<script src="./th-geo.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, addDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCn-4Po1XQFNhnFnoIeebKUl3q7BCDLp5w",
+    authDomain: "tbr-recycling-ops.firebaseapp.com",
+    projectId: "tbr-recycling-ops",
+    storageBucket: "tbr-recycling-ops.firebasestorage.app",
+    messagingSenderId: "527372313469",
+    appId: "1:527372313469:web:d7260893ba8deee81fe214"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const userEmailEl = document.getElementById("userEmail");
+  const btnLogout   = document.getElementById("btnLogout");
+  const statusLine  = document.getElementById("statusLine");
+  const form        = document.getElementById("shopForm");
+
+  const userRoleEl  = document.getElementById("userRole");
+  const roleChip    = document.getElementById("roleChip");
+  const regionSelect= document.getElementById("regionSelect");
+  const yardSelect  = document.getElementById("yardSelect");
+  const yardHint    = document.getElementById("yardHint");
+
+  const shopNameEl  = document.getElementById("shopName");
+  const phoneEl     = document.getElementById("phone");
+  const addrLine1El = document.getElementById("addrLine1");
+  const addrLine2El = document.getElementById("addrLine2");
+  const addressEl   = document.getElementById("address");
+  const geoProvinceEl = document.getElementById("geoProvince");
+  const geoDistrictEl = document.getElementById("geoDistrict");
+  const geoSubEl      = document.getElementById("geoSubdistrict");
+  const geoProvinceSearchEl = document.getElementById("geoProvinceSearch");
+  const geoDistrictSearchEl = document.getElementById("geoDistrictSearch");
+  const geoSubdistrictSearchEl = document.getElementById("geoSubdistrictSearch");
+
+  const gpsLatEl    = document.getElementById("gpsLat");
+  const gpsLngEl    = document.getElementById("gpsLng");
+  const btnGetLocation = document.getElementById("btnGetLocation");
+
+  const ownerListEl = document.getElementById("ownerList");
+  const btnAddOwner = document.getElementById("btnAddOwner");
+
+  const toolOtherTxt = document.getElementById("toolOtherText");
+  const transportOtherEl = document.getElementById("transportOther");
+  const sortingOtherEl   = document.getElementById("sortingOther");
+
+  const matTbody = document.getElementById("matTbody");
+  const btnAddMat = document.getElementById("btnAddMat");
+
+  const langChecksEl = document.getElementById("langChecks");
+  const languageOtherEl = document.getElementById("languageOther");
+  const responseSpeedEl = document.getElementById("responseSpeed");
+  const wantUpdatesEl = document.getElementById("wantUpdates");
+
+  let editingId = null;
+  let userProfile = null;
+  const MASTER = window.TBR_MASTERS || window.TBR_MASTER || {YARDS_MASTER:[]};
+
+  function setStatus(msg,color="#b00020"){
+    statusLine.textContent = msg || "";
+    statusLine.style.color = color;
+  }
+
+  /* owner dynamic */
+  function addOwnerRow(nameValue=""){
+    const idx = ownerListEl.children.length + 1;
+    const row = document.createElement("div");
+    row.className = "owner-row";
+    row.innerHTML = `
+      <span style="min-width:26px;font-weight:600;">${idx}.</span>
+      <input type="text" class="owner-input" value="${nameValue?nameValue.replace(/"/g,'&quot;'):""}" placeholder="ชื่อเจ้าของ/ผู้จัดการ">
+      <button type="button" class="btn-mini btn-mini-danger">ลบ</button>
+    `;
+    row.querySelector(".btn-mini-danger").addEventListener("click",()=>{
+      ownerListEl.removeChild(row);
+      Array.from(ownerListEl.children).forEach((child,i)=>{
+        child.querySelector("span").textContent = (i+1)+".";
+      });
+    });
+    ownerListEl.appendChild(row);
+  }
+  btnAddOwner.addEventListener("click",()=>addOwnerRow());
+  addOwnerRow();
+
+  /* region from master */
+  function fillRegionOptions(){
+    const regions = [...new Set((MASTER.YARDS_MASTER||[]).map(y=>y.region).filter(Boolean))].sort();
+    regions.forEach(r=>{
+      const opt = document.createElement("option");
+      opt.value = r;
+      opt.textContent = r;
+      regionSelect.appendChild(opt);
+    });
+  }
+  fillRegionOptions();
+
+  function fillYardsByRegion(region, selected=""){
+    yardSelect.innerHTML = "";
+    if(!region){
+      yardSelect.innerHTML = `<option value="">เลือกภาคก่อน</option>`;
+    }else{
+      const yards = (MASTER.YARDS_MASTER||[]).filter(y=>y.region===region);
+      yardSelect.innerHTML = `<option value="">เลือก</option>` + yards.map(y=>`<option value="${y.name}">${y.name}</option>`).join("");
+      yardSelect.disabled = false;
+    }
+    if(selected){ yardSelect.value = selected; }
+  }
+
+  regionSelect.addEventListener("change", ()=>{
+    fillYardsByRegion(regionSelect.value);
+  });
+
+  /* TH geo */
+  const RAW_GEO = Array.isArray(window.TH_GEO) ? window.TH_GEO : [];
+  const provs = [...new Set(RAW_GEO.map(r=>r.province).filter(Boolean))].sort();
+  provs.forEach(p=>{
+    const o=document.createElement("option");
+    o.value=p;o.textContent=p;
+    geoProvinceEl.appendChild(o);
+  });
+
+  function updateFullAddress(){
+    const parts=[];
+    if(addrLine1El.value.trim()) parts.push(addrLine1El.value.trim());
+    if(addrLine2El.value.trim()) parts.push(addrLine2El.value.trim());
+    if(geoSubEl.value)      parts.push("ต."+geoSubEl.value);
+    if(geoDistrictEl.value) parts.push("อ."+geoDistrictEl.value);
+    if(geoProvinceEl.value) parts.push("จ."+geoProvinceEl.value);
+    addressEl.value = parts.join(" ");
+  }
+
+  geoProvinceEl.addEventListener("change", ()=>{
+    const pv=geoProvinceEl.value;
+    geoDistrictEl.innerHTML = '<option value="">เลือกอำเภอ</option>';
+    geoDistrictEl.disabled = !pv;
+    geoDistrictSearchEl.disabled = !pv;
+    geoSubEl.innerHTML = '<option value="">เลือกตำบล</option>';
+    geoSubEl.disabled = true;
+    geoSubdistrictSearchEl.disabled = true;
+    if(pv){
+      const dists = [...new Set(RAW_GEO.filter(r=>r.province===pv).map(r=>r.district))].sort();
+      dists.forEach(d=>{
+        const o=document.createElement("option");
+        o.value=d;o.textContent=d;
+        geoDistrictEl.appendChild(o);
+      });
+    }
+    updateFullAddress();
+  });
+
+  geoDistrictEl.addEventListener("change", ()=>{
+    const pv=geoProvinceEl.value, dt=geoDistrictEl.value;
+    geoSubEl.innerHTML = '<option value="">เลือกตำบล</option>';
+    geoSubEl.disabled = !dt;
+    geoSubdistrictSearchEl.disabled = !dt;
+    if(dt){
+      const subs = RAW_GEO.filter(r=>r.province===pv && r.district===dt);
+      subs.forEach(s=>{
+        const o=document.createElement("option");
+        o.value=s.subdistrict;o.textContent=s.subdistrict;
+        geoSubEl.appendChild(o);
+      });
+    }
+    updateFullAddress();
+  });
+
+  geoSubEl.addEventListener("change", ()=>{
+    updateFullAddress();
+    const pv=geoProvinceEl.value, dt=geoDistrictEl.value, sb=geoSubEl.value;
+    const row = RAW_GEO.find(r=>r.province===pv && r.district===dt && r.subdistrict===sb);
+    if(row){
+      if(row.lat){ gpsLatEl.value = row.lat; }
+      if(row.lng){ gpsLngEl.value = row.lng; }
+    }
+  });
+
+  addrLine1El.addEventListener("input", updateFullAddress);
+  addrLine2El.addEventListener("input", updateFullAddress);
+
+  /* ช่องค้นหา จังหวัด/อำเภอ/ตำบล */
+  function selectBySearch(inputEl, selectEl){
+    const term = inputEl.value.trim();
+    if(!term) return;
+    const opt = Array.from(selectEl.options).find(o=>o.textContent.includes(term));
+    if(opt){
+      selectEl.value = opt.value;
+      selectEl.dispatchEvent(new Event("change"));
+    }
+  }
+  geoProvinceSearchEl.addEventListener("input", ()=>selectBySearch(geoProvinceSearchEl, geoProvinceEl));
+  geoDistrictSearchEl.addEventListener("input", ()=>selectBySearch(geoDistrictSearchEl, geoDistrictEl));
+  geoSubdistrictSearchEl.addEventListener("input", ()=>selectBySearch(geoSubdistrictSearchEl, geoSubEl));
+
+  /* geolocation */
+  btnGetLocation.addEventListener("click", ()=>{
+    if(!navigator.geolocation){setStatus("เบราว์เซอร์ไม่รองรับการดึงพิกัด","#b00020");return;}
+    setStatus("กำลังดึงพิกัด…","#666");
+    navigator.geolocation.getCurrentPosition(pos=>{
+      gpsLatEl.value = pos.coords.latitude.toFixed(6);
+      gpsLngEl.value = pos.coords.longitude.toFixed(6);
+      setStatus("ดึงพิกัดสำเร็จ ✅","#2f7d32");
+    }, err=>{setStatus("ดึงพิกัดไม่สำเร็จ: "+err.message,"#b00020")});
+  });
+
+  /* material table */
+  const MATERIAL_TYPES = ["ขวดแก้ว","PET","HDPE","UBC","เศษแก้ว","อื่นๆ (โปรดระบุ)"];
+  const GLASS_SIZES = ["320","620","330","350","625","640","700","1000","อื่นๆ (โปรดระบุ)"];
+  const PET_TYPES = ["ใส","ขุ่น","อื่นๆ (โปรดระบุ)"];
+  const FREQ_OPTIONS = ["รายวัน","รายสัปดาห์","รายเดือน","ไม่แน่นอน"];
+  const CHANNEL_OPTIONS = ["TBR","ร้านค้าอื่น","OS ปลายทาง","อื่นๆ"];
+
+  function unitOptionsFor(type){
+    if(["PET","HDPE","UBC","เศษแก้ว"].includes(type)){
+      return `<option value="kg">กิโลกรัม</option><option value="ton">ตัน</option>`;
+    }
+    if(type==="ขวดแก้ว"){
+      return `<option value="pcs">ใบ</option>`;
+    }
+    return `<option value="kg">กิโลกรัม</option><option value="ton">ตัน</option><option value="pcs">ใบ</option>`;
+  }
+
+  function buildExtraCell(type, d={}){
+    if(type==="ขวดแก้ว"){
+      return `
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <label>ขนาด:</label>
+          <select class="mat-glass-size">
+            ${GLASS_SIZES.map(s=>`<option value="${s}" ${d.glassSize===s?'selected':''}>${s}</option>`).join("")}
+          </select>
+          <input type="text" class="mat-glass-size-other" placeholder="ระบุขนาด" style="display:${d.glassSize==='อื่นๆ (โปรดระบุ)'?'inline-block':'none'};min-width:150px" value="${d.glassSizeOther||''}">
+        </div>
+      `;
+    }
+    if(type==="PET"){
+      return `
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <label>ประเภท:</label>
+          <select class="mat-pet-type">
+            ${PET_TYPES.map(p=>`<option value="${p}" ${d.petType===p?'selected':''}>${p}</option>`).join("")}
+          </select>
+          <input type="text" class="mat-pet-other" placeholder="ระบุประเภท" style="display:${d.petType==='อื่นๆ (โปรดระบุ)'?'inline-block':'none'};min-width:150px" value="${d.petOther||''}">
+        </div>
+      `;
+    }
+    return `<div style="color:#666">—</div>`;
+  }
+
+  function addMaterialRow(d={}){
+    const type = d.type || "ขวดแก้ว";
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <select class="mat-type">
+          ${MATERIAL_TYPES.map(m=>`<option value="${m}" ${type===m?'selected':''}>${m}</option>`).join("")}
+        </select>
+      </td>
+      <td class="mat-extra">
+        ${buildExtraCell(type, d)}
+      </td>
+      <td><input type="number" class="mat-vol" value="${d.volume||""}" style="width:90px"></td>
+      <td><select class="mat-unit">${unitOptionsFor(type)}</select></td>
+      <td>
+        <select class="mat-freq">
+          ${FREQ_OPTIONS.map(f=>`<option value="${f}" ${d.transactionFrequency===f?'selected':''}>${f}</option>`).join("")}
+        </select>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <select class="mat-buyer">
+            ${CHANNEL_OPTIONS.map(c=>`<option value="${c}" ${d.buyer===c?'selected':''}>${c}</option>`).join("")}
+          </select>
+          <input type="text" class="mat-buyer-name" placeholder="ชื่อร้าน/โรงงาน" style="display:${(d.buyer && d.buyer!=="TBR")?'inline-block':'none'};min-width:140px" value="${d.buyerName||''}">
+        </div>
+      </td>
+      <td><input type="text" class="mat-note" value="${d.note||""}"></td>
+      <td><button type="button" class="btn-del-row">ลบ</button></td>
+    `;
+    const unitSel = tr.querySelector(".mat-unit");
+    if(type==="ขวดแก้ว"){ unitSel.value = "pcs"; unitSel.disabled = true; }
+
+    tr.querySelector(".btn-del-row").addEventListener("click",()=>tr.remove());
+
+    const typeSel = tr.querySelector(".mat-type");
+    typeSel.addEventListener("change", ()=>{
+      const newType = typeSel.value;
+      tr.querySelector(".mat-extra").innerHTML = buildExtraCell(newType,{});
+      unitSel.innerHTML = unitOptionsFor(newType);
+      unitSel.disabled = (newType==="ขวดแก้ว");
+      if(newType==="ขวดแก้ว") unitSel.value="pcs";
+      bindExtraHandlers(tr, newType);
+    });
+
+    function bindExtraHandlers(row, t){
+      if(t==="ขวดแก้ว"){
+        const sizeSel = row.querySelector(".mat-glass-size");
+        const sizeOther = row.querySelector(".mat-glass-size-other");
+        sizeSel.addEventListener("change", ()=>{
+          sizeOther.style.display = (sizeSel.value==="อื่นๆ (โปรดระบุ)")?"inline-block":"none";
+        });
+      }else if(t==="PET"){
+        const petSel = row.querySelector(".mat-pet-type");
+        const petOther = row.querySelector(".mat-pet-other");
+        petSel.addEventListener("change", ()=>{
+          petOther.style.display = (petSel.value==="อื่นๆ (โปรดระบุ)")?"inline-block":"none";
+        });
+      }
+    }
+    bindExtraHandlers(tr, type);
+
+    const buyerSel = tr.querySelector(".mat-buyer");
+    const buyerName = tr.querySelector(".mat-buyer-name");
+    buyerSel.addEventListener("change", ()=>{
+      buyerName.style.display = (buyerSel.value==="TBR")?"none":"inline-block";
+      if(buyerSel.value==="TBR") buyerName.value = "";
+    });
+
+    matTbody.appendChild(tr);
+  }
+
+  btnAddMat.addEventListener("click",()=>addMaterialRow());
+  addMaterialRow();
+
+  /* language other */
+  langChecksEl.addEventListener("change", ()=>{
+    const hasOther = Array.from(langChecksEl.querySelectorAll("input[type=checkbox]")).some(c=>c.checked && c.value==="other");
+    languageOtherEl.style.display = hasOther ? "block" : "none";
+  });
+
+  /* auth */
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){location.href="./login.html";return;}
+    userEmailEl.textContent = user.email || "-";
+
+    try{
+      const snap = await getDoc(doc(db,"users",user.uid));
+      if(snap.exists()){
+        userProfile = snap.data();
+      }
+    }catch{}
+
+    const role = (userProfile?.role || userProfile?.level || "").toLowerCase();
+    const userYard = userProfile?.yardName || userProfile?.yardId || "";
+    const userRegion = userProfile?.regionName || userProfile?.regionId || "";
+
+    if(role){
+      userRoleEl.value = role;
+      roleChip.style.display = "inline-flex";
+      roleChip.textContent = "สิทธิ์: " + role;
+    }else{
+      userRoleEl.value = "ไม่พบ role";
+    }
+
+    if(["yard","ลาน"].includes(role)){
+      let regionFromMaster = userRegion;
+      if(!regionFromMaster && userYard){
+        const found = (MASTER.YARDS_MASTER||[]).find(y=>y.name===userYard);
+        if(found) regionFromMaster = found.region;
+      }
+      if(regionFromMaster){
+        regionSelect.value = regionFromMaster;
+        fillYardsByRegion(regionFromMaster, userYard);
+      }
+      yardSelect.disabled = true;
+      yardHint.textContent = "ดึงจากสิทธิ์ของ user แล้ว";
+    }else if(["nation","admin","regional","region","ภาค"].includes(role)){
+      regionSelect.required = true;
+      yardSelect.required = true;
+      if(userRegion){
+        regionSelect.value = userRegion;
+        fillYardsByRegion(userRegion);
+      }
+      yardHint.textContent = "เลือก";
+    }
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    if(id){
+      editingId = id;
+      try{
+        const ss = await getDoc(doc(db,"shops",id));
+        if(ss.exists()) fillFormWithData(ss.data());
+      }catch(e){console.warn(e);}
+    }
+  });
+
+  btnLogout.addEventListener("click", async ()=>{await signOut(auth);location.href="./login.html";});
+
+  function fillFormWithData(d){
+    shopNameEl.value = d.shopName||"";
+    phoneEl.value    = d.contactInfo?.phone||"";
+
+    ownerListEl.innerHTML = "";
+    if(Array.isArray(d.owners) && d.owners.length){
+      d.owners.forEach(o=>addOwnerRow(o));
+    }else{
+      addOwnerRow();
+    }
+
+    const loc = d.location||{};
+    addressEl.value = loc.address||"";
+    gpsLatEl.value  = loc.gps_lat ?? "";
+    gpsLngEl.value  = loc.gps_lng ?? "";
+    if(loc.province){
+      geoProvinceEl.value = loc.province;
+      geoProvinceEl.dispatchEvent(new Event("change"));
+      if(loc.district){
+        geoDistrictEl.value = loc.district;
+        geoDistrictEl.dispatchEvent(new Event("change"));
+      }
+      if(loc.subdistrict){
+        geoSubEl.value = loc.subdistrict;
+      }
+      updateFullAddress();
+    }
+
+    const recRegion = d.regionId || d.regionName || "";
+    const recYard   = d.yardId   || d.yardName   || "";
+    if(recRegion){
+      regionSelect.value = recRegion;
+      fillYardsByRegion(recRegion, recYard);
+    }
+
+    if(d.materialFlow?.materials){
+      matTbody.innerHTML="";
+      d.materialFlow.materials.forEach(m=>addMaterialRow(m));
+    }
+
+    if(Array.isArray(d.communication?.language)){
+      const langs = d.communication.language;
+      langChecksEl.querySelectorAll("input[type=checkbox]").forEach(c=>{
+        c.checked = langs.includes(c.value);
+      });
+      const extras = langs.filter(l=>!["thai","english","chinese","myanmar","other"].includes(l));
+      if(extras.length){
+        langChecksEl.querySelector('input[value="other"]').checked = true;
+        languageOtherEl.style.display = "block";
+        languageOtherEl.value = extras.join(", ");
+      }
+    }
+    responseSpeedEl.value = d.communication?.responseSpeed || "";
+    wantUpdatesEl.checked = !!d.communication?.wantUpdates;
+
+    setStatus("โหลดข้อมูลร้านเดิมแล้ว","#2f7d32");
+  }
+
+  form.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+
+    if(!regionSelect.value){
+      setStatus("กรุณาเลือกภาค","#b00020");
+      regionSelect.focus();
+      return;
+    }
+    if(yardSelect.disabled===false && !yardSelect.value){
+      setStatus("กรุณาเลือกลาน","#b00020");
+      yardSelect.focus();
+      return;
+    }
+
+    setStatus("กำลังบันทึก…","#666");
+
+    const owners = Array.from(document.querySelectorAll(".owner-input")).map(i=>i.value.trim()).filter(Boolean);
+
+    const tools=[];
+    document.querySelectorAll(".tool-check").forEach(ch=>{
+      if(ch.checked){
+        if(ch.classList.contains("tool-other-flag")){
+          const tx = toolOtherTxt.value.trim();
+          tools.push(tx?("อื่นๆ: "+tx):"อื่นๆ");
+        }else{
+          tools.push(ch.value);
+        }
+      }
+    });
+
+    const transports=[];
+    document.querySelectorAll("#transportChecks input[type=checkbox]").forEach(ch=>{
+      if(ch.checked){
+        if(ch.value==="other"){
+          const t=transportOtherEl.value.trim();
+          transports.push(t?("อื่นๆ: "+t):"อื่นๆ");
+        }else{
+          transports.push(ch.value);
+        }
+      }
+    });
+
+    const sortings=[];
+    document.querySelectorAll("#sortingChecks input[type=checkbox]").forEach(ch=>{
+      if(ch.checked){
+        if(ch.value==="other"){
+          const t=sortingOtherEl.value.trim();
+          sortings.push(t?("อื่นๆ: "+t):"อื่นๆ");
+        }else{
+          sortings.push(ch.value);
+        }
+      }
+    });
+
+    const mats=[];
+    Array.from(matTbody.children).forEach(tr=>{
+      const typeSel = tr.querySelector(".mat-type");
+      const type = typeSel.value;
+      const row = {
+        type,
+        volume: tr.querySelector(".mat-vol").value? Number(tr.querySelector(".mat-vol").value): null,
+        unit:   tr.querySelector(".mat-unit").value,
+        transactionFrequency: tr.querySelector(".mat-freq").value,
+        buyer:  tr.querySelector(".mat-buyer").value,
+        buyerName: (tr.querySelector(".mat-buyer").value==="TBR") ? "" : (tr.querySelector(".mat-buyer-name").value||""),
+        note:   tr.querySelector(".mat-note").value
+      };
+      if(type==="ขวดแก้ว"){
+        const sizeSel   = tr.querySelector(".mat-glass-size");
+        const sizeOther = tr.querySelector(".mat-glass-size-other");
+        row.glassSize = sizeSel.value;
+        row.glassSizeOther = (sizeSel.value==="อื่นๆ (โปรดระบุ)") ? (sizeOther.value||"") : "";
+        row.unit = "pcs";
+      }
+      if(type==="PET"){
+        const petSel   = tr.querySelector(".mat-pet-type");
+        const petOther = tr.querySelector(".mat-pet-other");
+        row.petType = petSel.value;
+        row.petOther = (petSel.value==="อื่นๆ (โปรดระบุ)") ? (petOther.value||"") : "";
+      }
+      mats.push(row);
+    });
+
+    const commCh = Array.from(document.querySelectorAll(".comm-channel"))
+      .filter(ch=>ch.checked).map(ch=>ch.value);
+
+    const selectedLangs = Array.from(langChecksEl.querySelectorAll("input[type=checkbox]"))
+      .filter(c=>c.checked)
+      .map(c=>c.value);
+    const extraLang = languageOtherEl.style.display==="block" ? languageOtherEl.value.trim() : "";
+    if(extraLang){
+      extraLang.split(",").map(s=>s.trim()).filter(Boolean).forEach(l=>selectedLangs.push(l));
+    }
+
+    const role = (userProfile?.role || userProfile?.level || "").toLowerCase();
+    let yardToSave = "";
+    if(["yard","ลาน"].includes(role)){
+      yardToSave = userProfile?.yardName || userProfile?.yardId || yardSelect.value || "";
+    }else{
+      yardToSave = yardSelect.value || "";
+    }
+
+    const payload = {
+      shopName: shopNameEl.value.trim(),
+      owners: owners,
+      ownerName: owners[0] || "",
+      contactInfo: { phone: phoneEl.value.trim() },
+      location: {
+        province: geoProvinceEl.value,
+        district: geoDistrictEl.value,
+        subdistrict: geoSubEl.value,
+        address: addressEl.value.trim(),
+        gps_lat: gpsLatEl.value? Number(gpsLatEl.value): null,
+        gps_lng: gpsLngEl.value? Number(gpsLngEl.value): null
+      },
+      operationalCapacity:{
+        tools: tools,
+        storageCapacity: document.getElementById("storageCapacity")?.value?.trim() || "",
+        transportation: transports,
+        sortingCapability: sortings
+      },
+      materialFlow:{ materials: mats },
+      communication:{
+        preferredChannels: commCh,
+        language: selectedLangs,
+        responseSpeed: responseSpeedEl.value,
+        wantUpdates:  wantUpdatesEl.checked
+      },
+      roleAtSave: role,
+      regionId: regionSelect.value,
+      yardId:   yardToSave,
+      updatedAt: new Date().toISOString()
+    };
+
+    try{
+      if(editingId){
+        await updateDoc(doc(db,"shops",editingId),payload);
+        setStatus("อัปเดตข้อมูลร้านสำเร็จ ✅","#2f7d32");
+      }else{
+        const ref = await addDoc(collection(db,"shops"),{
+          ...payload,
+          createdAt:new Date().toISOString()
+        });
+        setStatus("บันทึกขึ้นฐานข้อมูลสำเร็จ ✅ (id: "+ref.id+")","#2f7d32");
+      }
+      setTimeout(()=>location.href="./dashboard.html",900);
+    }catch(err){
+      console.error(err);
+      setStatus("บันทึกไม่สำเร็จ (อาจออฟไลน์) → เก็บในเครื่อง","#b00020");
+      const list = JSON.parse(localStorage.getItem("offlineShops")||"[]");
+      list.push(payload);
+      localStorage.setItem("offlineShops",JSON.stringify(list));
+    }
+  });
+
+  // รองรับแก้ไขจาก dashboard (session)
+  document.addEventListener("DOMContentLoaded", () => {
+    const editRaw = sessionStorage.getItem("editShop");
+    if (!editRaw) return;
+    try {
+      const shop = JSON.parse(editRaw);
+      fillFormWithData(shop);
+    } catch (e) {}
+  });
+</script>
+
+</body>
+</html>
